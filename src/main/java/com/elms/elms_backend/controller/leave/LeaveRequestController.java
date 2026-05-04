@@ -1,9 +1,9 @@
 package com.elms.elms_backend.controller.leave;
 
+import com.elms.elms_backend.dto.leave.LeaveRequestDTO;
 import com.elms.elms_backend.entity.LeaveRequest;
 import com.elms.elms_backend.service.leave.LeaveRequestService;
-import com.elms.elms_backend.service.leave.LeaveRequestServiceImpl;
-import com.elms.elms_backend.service.leave.LeaveService;
+
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,7 +17,7 @@ public class LeaveRequestController {
     }
 
     @PostMapping
-    public LeaveRequest createLeave(@RequestBody LeaveRequest request) {
-        return service.createLeave(request);
+    public LeaveRequest createLeave(@RequestBody LeaveRequestDTO dto) {
+        return service.createLeave(dto);
     }
 }
