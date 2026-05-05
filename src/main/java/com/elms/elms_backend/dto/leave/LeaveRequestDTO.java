@@ -1,5 +1,6 @@
 package com.elms.elms_backend.dto.leave;
 
+import com.elms.elms_backend.entity.enums.LeaveActionEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import java.time.LocalDate;
@@ -15,4 +16,6 @@ public class LeaveRequestDTO {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate endDate;
     private String reason;
+    private LeaveActionEnum action;
+    private
 }

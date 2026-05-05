@@ -1,15 +1,21 @@
 package com.elms.elms_backend.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.Year;
 
 @Entity
 @Table(name="leave_policies")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class LeavePolicy {
     @Id
     @GeneratedValue(strategy =  GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @ManyToOne
     @JoinColumn(name = "leave_type_id")

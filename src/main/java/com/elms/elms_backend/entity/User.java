@@ -2,15 +2,22 @@ package com.elms.elms_backend.entity;
 
 import com.elms.elms_backend.entity.enums.UserStatusEnum;
 import jakarta.persistence.*;
+import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer Id;
 
     @Column(name="name")
     private String name;

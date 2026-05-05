@@ -2,16 +2,22 @@ package com.elms.elms_backend.entity;
 
 import com.elms.elms_backend.entity.enums.DepartmentStatusEnum;
 import jakarta.persistence.*;
+import lombok.*;
 import org.springframework.cglib.core.Local;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "departments")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Department {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(name = "name",unique = true)
     private String name;

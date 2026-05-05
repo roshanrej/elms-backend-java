@@ -2,6 +2,7 @@ package com.elms.elms_backend.entity;
 
 import com.elms.elms_backend.entity.enums.UserActionEnum;
 import jakarta.persistence.*;
+import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import java.time.LocalDateTime;
@@ -9,10 +10,15 @@ import java.util.Map;
 
 @Entity
 @Table(name="user_audit_logs")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class UserAuditLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @ManyToOne()
     @JoinColumn(name="user_id")

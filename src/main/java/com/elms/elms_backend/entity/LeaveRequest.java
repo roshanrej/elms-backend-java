@@ -19,7 +19,7 @@ public class LeaveRequest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     // 🔹 MUST exist
     @ManyToOne(optional = false)
@@ -57,6 +57,6 @@ public class LeaveRequest {
     private LocalDateTime decisionAt;
 
     @Column(name="year")
-    private int year;
+    private Integer year;
 
 }

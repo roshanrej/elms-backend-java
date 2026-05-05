@@ -1,13 +1,15 @@
 package com.elms.elms_backend.controller.leave;
 
 import com.elms.elms_backend.dto.leave.LeaveRequestDTO;
+import com.elms.elms_backend.dto.leave.LeaveResponseDTO;
 import com.elms.elms_backend.entity.LeaveRequest;
+import com.elms.elms_backend.entity.enums.LeaveActionEnum;
 import com.elms.elms_backend.service.leave.LeaveRequestService;
 
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/leaves")
+@RequestMapping("/api/leave-draft")
 public class LeaveRequestController {
 
     private final LeaveRequestService service;
@@ -17,7 +19,7 @@ public class LeaveRequestController {
     }
 
     @PostMapping
-    public LeaveRequest createLeave(@RequestBody LeaveRequestDTO dto) {
-        return service.createLeave(dto);
+    public LeaveResponseDTO createLeaveDraft(@RequestBody LeaveRequestDTO leaveRequestDto) {
+        return service.createLeave(leaveRequestDto,leaveRequestDto.getAction());
     }
 }
