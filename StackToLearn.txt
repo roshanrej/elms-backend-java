@@ -1,0 +1,110 @@
+## FOUNDATION — HTTP & REQUEST THINKING
+
+* HTTP methods (GET, POST, PATCH, DELETE)
+* Request lifecycle
+* Headers vs body vs query params
+* Statelessness
+* Request context
+* API contracts
+* REST semantics
+
+## CORE BACKEND STRUCTURE
+
+* Controller responsibility
+* Service responsibility
+* Repository responsibility
+* DTOs
+* Entity modeling
+* Validation flow
+* Exception handling
+* Transactions
+* State transitions
+* Audit logging
+
+## DATABASE THINKING
+
+* Primary keys
+* Foreign keys
+* Relationships
+* Normalization
+* Constraints
+* Identity vs value
+* Event/audit modeling
+
+## AUTHENTICATION FOUNDATION
+
+* Credential flow
+* Password hashing
+* BCrypt
+* Register flow
+* Login flow
+* Identity verification
+
+## JWT & SECURITY FLOW
+
+* JWT structure
+
+  * Header
+  * Payload
+  * Signature
+* Claims
+* Token signing
+* Token validation
+* Stateless auth
+* Bearer tokens
+* Security context
+
+## SPRING SECURITY CORE
+
+* Filter chain
+* Authentication
+* Authorization
+* SecurityContextHolder
+* Request interception
+* Method security
+* Role checks
+
+## AUTHORIZATION THINKING
+
+* Identity vs permission
+* Role-based access
+* Context-aware authorization
+* State-aware authorization
+* Trust boundaries
+
+## PRODUCTION AWARENESS
+
+* Environment variables
+* Secret management
+* Logging
+* Monitoring
+* Error handling
+* HTTPS/TLS
+* Secure configuration
+
+## DEVOPS & DEPLOYMENT (LATER)
+
+* Linux basics
+* Docker
+* CI/CD
+* Reverse proxy
+* Cloud deployment
+
+## SYSTEM DESIGN (MUCH LATER)
+
+* Caching
+* Queues
+* Event-driven systems
+* Distributed systems
+* Scalability
+* Consistency models
+
+
+Current Focus
+
+HTTP
+→ DTO/service/entity flow
+→ password hashing
+→ login
+→ JWT
+→ Spring Security filter flow
