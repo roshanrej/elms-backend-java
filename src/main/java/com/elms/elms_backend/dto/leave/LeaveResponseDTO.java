@@ -8,8 +8,8 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 public class LeaveResponseDTO {
-    private Integer id;
-    private Integer leaveTypeId;
+    private Long id;
+    private String leaveType;
     private LocalDate startDate;
     private LocalDate endDate;
     private String reason;

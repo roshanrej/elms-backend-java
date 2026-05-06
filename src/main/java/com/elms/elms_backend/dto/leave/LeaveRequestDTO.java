@@ -9,13 +9,12 @@ import java.time.LocalDate;
 public class LeaveRequestDTO {
 
     private Long userId;
-    private Long leaveTypeId;
+    private String leaveType;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate startDate;
-
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate endDate;
     private String reason;
     private LeaveActionEnum action;
-    private
+
 }

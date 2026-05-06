@@ -15,7 +15,7 @@ import java.time.Year;
 public class LeavePolicy {
     @Id
     @GeneratedValue(strategy =  GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "leave_type_id")

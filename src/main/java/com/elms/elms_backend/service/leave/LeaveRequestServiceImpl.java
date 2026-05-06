@@ -29,10 +29,12 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
     @Override
     public LeaveResponseDTO createLeave(LeaveRequestDTO leaveRequestDto, LeaveActionEnum action) {
-        if(leaveRequestDto)
+
+
+
         // 1. Validate (only for SUBMIT)
         if (action == LeaveActionEnum.SUBMIT) {
-            if (leaveRequestDto.getLeaveTypeId() == null ||
+            if (leaveRequestDto.getLeaveType() == null ||
                     leaveRequestDto.getStartDate() == null ||
                     leaveRequestDto.getEndDate() == null) {
                 throw new RuntimeException("Missing required fields");
@@ -43,12 +45,17 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
             }
         }
 
+        LeaveType leaveType = null;
+
+        if (leaveRequestDto.getLeaveType() != null) {
+            leaveType = leaveTypeRepo.findByName(leaveRequestDto.getLeaveType()).orElseThrow(() ->
+                    new RuntimeException("Leave type not found"));
+        }
         // 2. Fetch required entities
         User user = userRepo.findById(leaveRequestDto.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found")); // Does not belong here
 
-        LeaveType leaveType = leaveTypeRepo.findById(leaveRequestDto.getLeaveTypeId())
-                .orElseThrow(() -> new RuntimeException("Leave type not found"));
+
 
         // 3. Decide status
         LeaveRequestStatusEnum status =
@@ -56,7 +63,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
                         ? LeaveRequestStatusEnum.PENDING
                         : LeaveRequestStatusEnum.DRAFT;
 
-        // 4. Safe year extraction
+        // 4year extraction
         Integer year = (leaveRequestDto.getStartDate() != null)
                 ? leaveRequestDto.getStartDate().getYear()
                 : null;
@@ -80,7 +87,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         // 7. Return response DTO
         return new LeaveResponseDTO(
                 savedLeave.getId(),
-                savedLeave.getLeaveType().getId(),
+                savedLeave.getLeaveType().getName(),
                 savedLeave.getStartDate(),
                 savedLeave.getEndDate(),
                 savedLeave.getReason(),

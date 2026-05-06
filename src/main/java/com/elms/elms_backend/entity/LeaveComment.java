@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 public class LeaveComment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
    @ManyToOne
     @JoinColumn(name="leave_id")

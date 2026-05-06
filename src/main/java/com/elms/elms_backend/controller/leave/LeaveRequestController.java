@@ -9,7 +9,7 @@ import com.elms.elms_backend.service.leave.LeaveRequestService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/leave-draft")
+@RequestMapping("/api/leaves")
 public class LeaveRequestController {
 
     private final LeaveRequestService service;
