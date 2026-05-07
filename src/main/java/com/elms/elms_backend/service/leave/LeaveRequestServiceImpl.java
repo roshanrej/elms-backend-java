@@ -13,6 +13,7 @@ import com.elms.elms_backend.repository.user.UserRepository;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 
+
 @Service
 public class LeaveRequestServiceImpl implements LeaveRequestService {
 
@@ -29,8 +30,6 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
     @Override
     public LeaveResponseDTO createLeave(LeaveRequestDTO leaveRequestDto, LeaveActionEnum action) {
-
-
 
         // 1. Validate (only for SUBMIT)
         if (action == LeaveActionEnum.SUBMIT) {
