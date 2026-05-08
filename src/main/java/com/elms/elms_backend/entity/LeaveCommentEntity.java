@@ -2,7 +2,6 @@ package com.elms.elms_backend.entity;
 
 
 import jakarta.persistence.*;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -15,18 +14,18 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class LeaveComment {
+public class LeaveCommentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
    @ManyToOne
     @JoinColumn(name="leave_id")
-    private  LeaveRequest leaveRequest;
+    private LeaveRequestEntity leaveRequest;
 
    @ManyToOne
     @JoinColumn(name="user_id")
-    private User user;
+    private UserEntity user;
 
    @Column(name="message", nullable = false)
     private String message;

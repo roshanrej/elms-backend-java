@@ -1,12 +1,11 @@
 package com.elms.elms_backend.repository.leave;
 
-import com.elms.elms_backend.entity.LeaveType;
+import com.elms.elms_backend.entity.LeaveTypeEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@Repository
-public interface LeaveTypeRepository  extends JpaRepository<LeaveType,Long> {
-    Optional<LeaveType> findByName(String leaveType);
+
+public interface LeaveTypeRepository  extends JpaRepository<LeaveTypeEntity,Long> {
+    Optional<LeaveTypeEntity> findByName(String leaveType);
 }

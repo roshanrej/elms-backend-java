@@ -15,7 +15,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class LeaveAuditLog {
+public class LeaveAuditLogEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +23,7 @@ public class LeaveAuditLog {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "leave_id", nullable = false)
-    private LeaveRequest leaveRequest;
+    private LeaveRequestEntity leaveRequest;
 
     @Column(name = "action", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -31,11 +31,11 @@ public class LeaveAuditLog {
 
     @ManyToOne(optional = false)
     @JoinColumn(name="actor_id", nullable = false)
-    private User actor;
+    private UserEntity actor;
 
     @ManyToOne(optional = false)
     @JoinColumn(name="actor_role_id", nullable = false)
-    private Role actorRole;
+    private RoleEntity actorRole;
 
     @Column(name="created_at", nullable = false)
     private LocalDateTime createdAt;

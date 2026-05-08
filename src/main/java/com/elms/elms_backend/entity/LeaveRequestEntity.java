@@ -6,7 +6,6 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Year;
 
 @Entity
 @Table(name = "leave_requests")
@@ -15,7 +14,7 @@ import java.time.Year;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class LeaveRequest {
+public class LeaveRequestEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,17 +23,17 @@ public class LeaveRequest {
     // 🔹 MUST exist
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private UserEntity user;
 
     // 🔹 MUST exist
     @ManyToOne(optional = false)
     @JoinColumn(name = "leave_type_id", nullable = false)
-    private LeaveType leaveType;
+    private LeaveTypeEntity leaveType;
 
     // 🔹 OPTIONAL
     @ManyToOne
     @JoinColumn(name = "approver_id")
-    private User approver;
+    private UserEntity approver;
 
     @Column(name = "start_date")
     private LocalDate startDate;

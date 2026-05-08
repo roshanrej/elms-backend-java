@@ -2,9 +2,9 @@ package com.elms.elms_backend.service.leave;
 
 import com.elms.elms_backend.dto.leave.LeaveRequestDTO;
 import com.elms.elms_backend.dto.leave.LeaveResponseDTO;
-import com.elms.elms_backend.entity.LeaveRequest;
-import com.elms.elms_backend.entity.LeaveType;
-import com.elms.elms_backend.entity.User;
+import com.elms.elms_backend.entity.LeaveRequestEntity;
+import com.elms.elms_backend.entity.LeaveTypeEntity;
+import com.elms.elms_backend.entity.UserEntity;
 import com.elms.elms_backend.entity.enums.LeaveActionEnum;
 import com.elms.elms_backend.entity.enums.LeaveRequestStatusEnum;
 import com.elms.elms_backend.repository.leave.LeaveRequestRepository;
@@ -44,14 +44,14 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
             }
         }
 
-        LeaveType leaveType = null;
+        LeaveTypeEntity leaveType = null;
 
         if (leaveRequestDto.getLeaveType() != null) {
             leaveType = leaveTypeRepo.findByName(leaveRequestDto.getLeaveType()).orElseThrow(() ->
                     new RuntimeException("Leave type not found"));
         }
         // 2. Fetch required entities
-        User user = userRepo.findById(leaveRequestDto.getUserId())
+        UserEntity user = userRepo.findById(leaveRequestDto.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found")); // Does not belong here
 
 
@@ -68,7 +68,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
                 : null;
 
         // 5. Build entity
-        LeaveRequest request = LeaveRequest.builder()
+        LeaveRequestEntity request = LeaveRequestEntity.builder()
                 .user(user)
                 .leaveType(leaveType)
                 .startDate(leaveRequestDto.getStartDate())
@@ -81,7 +81,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
         // 6. Persist
 
-        LeaveRequest savedLeave = leaveRequestRepo.save(request);
+        LeaveRequestEntity savedLeave = leaveRequestRepo.save(request);
 
         // 7. Return response DTO
         return new LeaveResponseDTO(

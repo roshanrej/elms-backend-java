@@ -3,18 +3,28 @@ package com.elms.elms_backend.service.auth;
 import com.elms.elms_backend.dto.api.ApiResponseDTO;
 import com.elms.elms_backend.dto.auth.LoginRequestDTO;
 import com.elms.elms_backend.dto.auth.LoginResponseDTO;
-import com.elms.elms_backend.entity.User;
+import com.elms.elms_backend.entity.Department;
+import com.elms.elms_backend.entity.RoleEntity;
+import com.elms.elms_backend.entity.UserEntity;
+import com.elms.elms_backend.entity.enums.UserStatusEnum;
+import com.elms.elms_backend.repository.department.DepartmentRepository;
+import com.elms.elms_backend.repository.user.RoleRepository;
 import com.elms.elms_backend.repository.user.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Service
 public class LoginRequestServiceImpl implements LoginRequestService {
 
     private final UserRepository userRepo;
-
-    public LoginRequestServiceImpl(UserRepository userRepo){
+    private final DepartmentRepository deptRepo;
+    private final RoleRepository roleRepo;
+    public LoginRequestServiceImpl(UserRepository userRepo, DepartmentRepository deptRepo, RoleRepository roleRepo){
         this.userRepo = userRepo;
+        this.deptRepo = deptRepo;
+        this.roleRepo = roleRepo;
 
     }
 
@@ -23,10 +33,10 @@ public class LoginRequestServiceImpl implements LoginRequestService {
         if(loginRequestDto.getEmail() == null || loginRequestDto.getPassword() == null){
             throw new RuntimeException("Missing required fields.");
         }
-        User user = userRepo.findByEmail(loginRequestDto.getEmail()).orElseThrow(() ->
+        UserEntity user = userRepo.findByEmail(loginRequestDto.getEmail()).orElseThrow(() ->
                 new RuntimeException("User with this email does not exist."));
 
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
         if(encoder.matches(loginRequestDto.getPassword(), user.getPasswordHash())){
             //jwt token generation later
@@ -35,6 +45,39 @@ public class LoginRequestServiceImpl implements LoginRequestService {
             return new ApiResponseDTO<LoginResponseDTO>(true,loginResponseData,null );
         }
         return new ApiResponseDTO<>(false,null,"Login failed. Try again." );
+
+
+    }
+    public void dummyRegister ( String username, String email,  String password,  String deptName,  String roleName){
+        if(username == null || email == null || roleName == null || deptName == null || password == null){
+            throw new RuntimeException("Missing required fields");
+        }
+
+        userRepo.findByEmail(email).ifPresent(user -> {
+            throw new RuntimeException("User already exists");
+        } );
+
+        String hashedPassword = new BCryptPasswordEncoder().encode(password);
+
+        Department department = deptRepo.findByName(deptName).orElseThrow(() ->
+                new RuntimeException("Department doesn't exist"));
+
+        RoleEntity role = roleRepo.findByName(roleName).orElseThrow(() ->
+                new RuntimeException("Role doesn't exist"));
+
+        UserEntity user = UserEntity.builder()
+                .name(username)
+                .email(email)
+                .passwordHash(hashedPassword)
+                .role(role)
+                .department(department)
+                .status(UserStatusEnum.ACTIVE)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+
+        userRepo.save(user);
+
 
 
     }

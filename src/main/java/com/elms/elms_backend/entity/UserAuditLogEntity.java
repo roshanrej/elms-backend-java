@@ -15,14 +15,14 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserAuditLog {
+public class UserAuditLogEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne()
     @JoinColumn(name="user_id")
-    private  User user;
+    private UserEntity user;
 
     @Enumerated(EnumType.STRING)
     @Column(name="action")

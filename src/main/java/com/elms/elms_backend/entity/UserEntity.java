@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,7 +32,7 @@ public class User {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "role_id", nullable = false)
-    private Role role;
+    private RoleEntity role;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "department_id", nullable = false)

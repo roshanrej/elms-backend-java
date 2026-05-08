@@ -12,14 +12,14 @@ import java.time.Year;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class LeavePolicy {
+public class LeavePolicyEntity {
     @Id
     @GeneratedValue(strategy =  GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
     @JoinColumn(name = "leave_type_id")
-    private LeaveType leaveType;
+    private LeaveTypeEntity leaveType;
 
     @Column(name="year")
     private Year year;
