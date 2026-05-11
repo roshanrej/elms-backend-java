@@ -38,3 +38,6 @@ postman/
 # OS / IDE
 .DS_Store
 *.log
+StackToLearn.txt
+System.md
+src/main/resources/application.properties
