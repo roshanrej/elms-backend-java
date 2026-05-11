@@ -20,6 +20,6 @@ public class LeaveRequestController {
 
     @PostMapping
     public LeaveResponseDTO createLeaveDraft(@RequestBody LeaveRequestDTO leaveRequestDto) {
-        return service.createLeave(leaveRequestDto,leaveRequestDto.getAction());
+        return service.createLeave(leaveRequestDto);
     }
 }

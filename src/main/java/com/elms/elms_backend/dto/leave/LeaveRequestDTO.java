@@ -8,7 +8,7 @@ import java.time.LocalDate;
 @Data
 public class LeaveRequestDTO {
 
-    private Long userId;
+
     private String leaveType;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate startDate;

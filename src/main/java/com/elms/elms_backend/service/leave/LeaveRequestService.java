@@ -5,5 +5,5 @@ import com.elms.elms_backend.dto.leave.LeaveResponseDTO;
 import com.elms.elms_backend.entity.enums.LeaveActionEnum;
 
 public  interface LeaveRequestService {
-    LeaveResponseDTO createLeave(LeaveRequestDTO request, LeaveActionEnum action);
+    LeaveResponseDTO createLeave(LeaveRequestDTO request);
 }

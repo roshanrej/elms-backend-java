@@ -10,6 +10,11 @@ import com.elms.elms_backend.entity.enums.LeaveRequestStatusEnum;
 import com.elms.elms_backend.repository.leave.LeaveRequestRepository;
 import com.elms.elms_backend.repository.leave.LeaveTypeRepository;
 import com.elms.elms_backend.repository.user.UserRepository;
+import com.elms.elms_backend.security.UserPrincipal;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 
@@ -28,14 +33,26 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
     }
 
+    @PreAuthorize("EMPLOYEE")
     @Override
-    public LeaveResponseDTO createLeave(LeaveRequestDTO leaveRequestDto, LeaveActionEnum action) {
+    public LeaveResponseDTO createLeave(LeaveRequestDTO leaveRequestDto) {
+        LeaveTypeEntity leaveType = null;
+
+        if (leaveRequestDto.getLeaveType() != null) {
+            leaveType = leaveTypeRepo.findByName(leaveRequestDto.getLeaveType()).orElseThrow(() ->
+                    new RuntimeException("Leave type not found"));
+        }
+
+        if (leaveRequestDto.getAction() == null) {
+            throw new RuntimeException(
+                    "Action is required"
+            );
+        }
 
         // 1. Validate (only for SUBMIT)
-        if (action == LeaveActionEnum.SUBMIT) {
-            if (leaveRequestDto.getLeaveType() == null ||
-                    leaveRequestDto.getStartDate() == null ||
-                    leaveRequestDto.getEndDate() == null) {
+        if (leaveRequestDto.getAction() == LeaveActionEnum.SUBMIT) {
+            if (leaveRequestDto.getStartDate() == null ||
+                    leaveRequestDto.getEndDate() == null ) {
                 throw new RuntimeException("Missing required fields");
             }
 
@@ -44,23 +61,48 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
             }
         }
 
-        LeaveTypeEntity leaveType = null;
-
-        if (leaveRequestDto.getLeaveType() != null) {
-            leaveType = leaveTypeRepo.findByName(leaveRequestDto.getLeaveType()).orElseThrow(() ->
-                    new RuntimeException("Leave type not found"));
-        }
         // 2. Fetch required entities
-        UserEntity user = userRepo.findById(leaveRequestDto.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found")); // Does not belong here
+         // Does not belong here
+        Authentication authentication =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
+
+        UserPrincipal principal =
+                (UserPrincipal)
+                        authentication.getPrincipal();
+
+        String email =
+                principal.getUsername();
+
+        UserEntity user =
+                userRepo.findByEmail(email)
+                        .orElseThrow(
+                                () -> new RuntimeException(
+                                        "User not found"
+                                )
+                        );
 
 
 
         // 3. Decide status
-        LeaveRequestStatusEnum status =
-                (action == LeaveActionEnum.SUBMIT)
-                        ? LeaveRequestStatusEnum.PENDING
-                        : LeaveRequestStatusEnum.DRAFT;
+        LeaveRequestStatusEnum status;
+
+        switch (leaveRequestDto.getAction()) {
+
+            case SUBMIT:
+                status = LeaveRequestStatusEnum.PENDING;
+                break;
+
+            case DRAFT:
+                status = LeaveRequestStatusEnum.DRAFT;
+                break;
+
+            default:
+                throw new RuntimeException(
+                        "Invalid action"
+                );
+        }
 
         // 4year extraction
         Integer year = (leaveRequestDto.getStartDate() != null)
