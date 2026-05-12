@@ -1,9 +1,9 @@
 package com.elms.elms_backend.service.auth;
 
-import com.elms.elms_backend.dto.api.ApiResponseDTO;
 import com.elms.elms_backend.dto.auth.LoginRequestDTO;
 import com.elms.elms_backend.dto.auth.LoginResponseDTO;
 import com.elms.elms_backend.entity.Department;
+import com.elms.elms_backend.entity.RefreshTokenEntity;
 import com.elms.elms_backend.entity.RoleEntity;
 import com.elms.elms_backend.entity.UserEntity;
 import com.elms.elms_backend.entity.enums.UserStatusEnum;
@@ -12,74 +12,151 @@ import com.elms.elms_backend.repository.user.RoleRepository;
 import com.elms.elms_backend.repository.user.UserRepository;
 import com.elms.elms_backend.security.JwtService;
 import com.elms.elms_backend.security.UserPrincipal;
+import com.elms.elms_backend.service.user.UserService;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
+/**
+ * Service implementation responsible for:
+ * - authentication workflows
+ * - JWT token generation
+ * - user registration operations
+ */
 @Service
-public class LoginRequestServiceImpl implements LoginRequestService {
+public class LoginRequestServiceImpl
+        implements LoginRequestService {
 
-    private final UserRepository userRepo;
+    private final RefreshTokenService refreshTokenService;
     private final DepartmentRepository deptRepo;
     private final RoleRepository roleRepo;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final UserRepository userRepo;
 
-    public LoginRequestServiceImpl(UserRepository userRepo, DepartmentRepository deptRepo, RoleRepository roleRepo, PasswordEncoder passwordEncoder, JwtService jwtService) {
-        this.userRepo = userRepo;
+    public LoginRequestServiceImpl(
+            RefreshTokenService refreshTokenService,
+            DepartmentRepository deptRepo,
+            RoleRepository roleRepo,
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService,
+            UserRepository userRepo
+    ) {
+        this.refreshTokenService = refreshTokenService;
+
+
         this.deptRepo = deptRepo;
         this.roleRepo = roleRepo;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
-
+        this.userRepo = userRepo;
     }
 
+    /**
+     * Authenticates user credentials and generates
+     * JWT access token on successful login.
+     *
+     * @param loginRequestDto login request payload
+     * @return authenticated login response
+     */
     @Override
-    public ApiResponseDTO<LoginResponseDTO> loginUser(LoginRequestDTO loginRequestDto) {
-        if (loginRequestDto.getEmail() == null || loginRequestDto.getPassword() == null) {
-            throw new RuntimeException("Missing required fields.");
+    public LoginResponseDTO loginUser(
+            LoginRequestDTO loginRequestDto
+    ) {
+
+        validateLoginPayload(loginRequestDto);
+
+        UserEntity user =
+                userRepo.findByEmail(
+                        loginRequestDto.getEmail()
+                ).orElseThrow(() ->
+                        new RuntimeException("Invalid credentials"));
+
+        if (!passwordEncoder.matches(
+                loginRequestDto.getPassword(),
+                user.getPasswordHash()
+        )) {
+
+            throw new RuntimeException(
+                    "Invalid credentials"
+            );
         }
-        UserEntity user = userRepo.findByEmail(loginRequestDto.getEmail()).orElseThrow(() ->
-                new RuntimeException("User with this email does not exist."));
 
+        String department = user.getDepartment() != null
+                ? user.getDepartment().getName()
+                : null;
 
-        if (passwordEncoder.matches(loginRequestDto.getPassword(), user.getPasswordHash())) {
-            String token =
-                    jwtService.generateToken(
-                            new UserPrincipal(user)
-                    );
+        String accessToken =
+                jwtService.generateAccessToken(
+                        new UserPrincipal(user)
+                );
 
-            LoginResponseDTO loginResponseData =
-                    new LoginResponseDTO(
-                            user.getName(),
-                            user.getEmail(),
-                            user.getRole().getName(),
-                            token
-                    );
-            return new ApiResponseDTO<LoginResponseDTO>(true, loginResponseData, null);
-        }
-        return new ApiResponseDTO<>(false, null, "Login failed. Try again.");
+        RefreshTokenEntity refreshToken =
+                refreshTokenService.createRefreshToken(user);
 
-
+        return new LoginResponseDTO(
+                user.getName(),
+                user.getEmail(),
+                user.getRole().getName(),
+                department,
+                accessToken,
+                refreshToken.getToken()
+        );
     }
 
-    public void dummyRegister(String username, String email, String password, String deptName, String roleName) {
-        if (username == null || email == null || roleName == null || deptName == null || password == null) {
-            throw new RuntimeException("Missing required fields");
+    /**
+     * Registers a new system user.
+     *
+     * @param username user name
+     * @param email    user email
+     * @param password raw password
+     * @param deptName department name
+     * @param roleName role name
+     */
+    @Override
+    public void dummyRegister(
+            String username,
+            String email,
+            String password,
+            String deptName,
+            String roleName
+    ) {
+
+        validateRegistrationPayload(
+                username,
+                email,
+                password,
+                deptName,
+                roleName
+        );
+
+        if (userRepo.findByEmail(email).isPresent()) {
+
+            throw new IllegalStateException(
+                    "Invalid credentials"
+            );
         }
 
-        userRepo.findByEmail(email).ifPresent(user -> {
-            throw new RuntimeException("User already exists");
-        });
+        String hashedPassword =
+                passwordEncoder.encode(password);
 
-        String hashedPassword = passwordEncoder.encode(password);
+        Department department =
+                deptRepo.findByName(deptName)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Invalid department"
+                                )
+                        );
 
-        Department department = deptRepo.findByName(deptName).orElseThrow(() ->
-                new RuntimeException("Department doesn't exist"));
-
-        RoleEntity role = roleRepo.findByName(roleName).orElseThrow(() ->
-                new RuntimeException("Role doesn't exist"));
+        RoleEntity role =
+                roleRepo.findByName(roleName)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Invalid role"
+                                )
+                        );
 
         UserEntity user = UserEntity.builder()
                 .name(username)
@@ -90,6 +167,54 @@ public class LoginRequestServiceImpl implements LoginRequestService {
                 .status(UserStatusEnum.ACTIVE)
                 .createdAt(LocalDateTime.now())
                 .build();
+
         userRepo.save(user);
+    }
+
+    /**
+     * Validates login request payload.
+     *
+     * @param loginRequestDto login request payload
+     */
+    private void validateLoginPayload(
+            LoginRequestDTO loginRequestDto
+    ) {
+
+        if (loginRequestDto.getEmail() == null
+                || loginRequestDto.getPassword() == null) {
+
+            throw new RuntimeException(
+                    "Missing required fields"
+            );
+        }
+    }
+
+    /**
+     * Validates registration request payload.
+     *
+     * @param username user name
+     * @param email    user email
+     * @param password raw password
+     * @param deptName department name
+     * @param roleName role name
+     */
+    private void validateRegistrationPayload(
+            String username,
+            String email,
+            String password,
+            String deptName,
+            String roleName
+    ) {
+
+        if (username == null
+                || email == null
+                || password == null
+                || deptName == null
+                || roleName == null) {
+
+            throw new RuntimeException(
+                    "Missing required fields"
+            );
+        }
     }
 }

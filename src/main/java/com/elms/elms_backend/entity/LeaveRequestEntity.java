@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Entity
 @Table(name = "leave_requests")
@@ -25,12 +26,12 @@ public class LeaveRequestEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
-    // 🔹 MUST exist
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "leave_type_id", nullable = false)
+
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "leave_type_id", nullable = true)
     private LeaveTypeEntity leaveType;
 
-    // 🔹 OPTIONAL
+    // OPTIONAL
     @ManyToOne
     @JoinColumn(name = "approver_id")
     private UserEntity approver;

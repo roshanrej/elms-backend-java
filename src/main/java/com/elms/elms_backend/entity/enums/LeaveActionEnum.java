@@ -3,7 +3,6 @@ package com.elms.elms_backend.entity.enums;
 
 
 public enum LeaveActionEnum {
-
         DRAFT,
         SUBMIT,
         APPROVE_REQUEST,
