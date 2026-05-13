@@ -65,7 +65,7 @@ public class LoginRequestServiceImpl
     public LoginResponseDTO loginUser(
             LoginRequestDTO loginRequestDto
     ) {
-
+System.out.println("Login HIT"+ loginRequestDto.toString());
         validateLoginPayload(loginRequestDto);
 
         UserEntity user =
