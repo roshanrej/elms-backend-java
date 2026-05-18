@@ -1,5 +1,6 @@
 package com.elms.elms_backend.dto.auth;
 
+import com.elms.elms_backend.entity.enums.RoleEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

@@ -9,5 +9,7 @@ public  interface LeaveRequestService {
     LeaveResponseDTO submitNewLeaveRequest(LeaveRequestDTO requestDTO);
     LeaveResponseDTO createLeaveDraft(LeaveRequestDTO requestDTO);
     LeaveResponseDTO submitLeaveRequest(Long id, LeaveRequestDTO leaveRequestDTO);
+    LeaveResponseDTO requestLeaveCancel(Long id);
+    LeaveResponseDTO cancelLeaveRequest(Long id);
 
 }

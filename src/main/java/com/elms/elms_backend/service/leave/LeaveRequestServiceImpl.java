@@ -14,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import com.elms.elms_backend.entity.enums.RoleEnum;
 
 @Service
 public class LeaveRequestServiceImpl implements LeaveRequestService {
@@ -219,6 +220,33 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
         return leaveRequestMapper.mapToResponse(savedLeave);
 
+    }
+
+    @Override
+    public LeaveResponseDTO requestLeaveCancel(Long id) {
+
+        return null;
+    }
+    @PreAuthorize("hasAnyRole('MANAGER', 'EMPLOYEE')")
+
+    @Override
+    public LeaveResponseDTO cancelLeaveRequest(Long id) {
+        LeaveRequestEntity leaveRequest = leaveRequestRepo.findById(id).orElseThrow(()-> new RuntimeException("Invalid leave"));
+        UserEntity user = userService.getAuthenticatedUser();
+        if(user.getRole().getName() == RoleEnum.MANAGER){
+         if(leaveRequest.getStatus() == LeaveRequestStatusEnum.CANCELLED){
+             throw new IllegalStateException("Leave already cancelled");
+         }y
+         
+        }
+        else if (user.getRole().getName() == RoleEnum.EMPLOYEE){
+            if(leaveRequest.getStatus() != LeaveRequestStatusEnum.PENDING){
+                throw new IllegalStateException("Unauthorized leave action");
+            }
+            leaveRequest.setStatus(LeaveRequestStatusEnum.CANCELLED) ;
+        }
+
+        return null;
     }
 
 
