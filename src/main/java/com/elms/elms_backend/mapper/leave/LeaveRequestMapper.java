@@ -21,14 +21,35 @@ public class LeaveRequestMapper {
                         ? leaveRequest.getLeaveType().getName()
                         : null;
 
+
+
+        String approverName =
+                leaveRequest.getApprover() != null
+                        ? leaveRequest.getApprover().getName()
+                        : null;
+
         return new LeaveResponseDTO(
                 leaveRequest.getId(),
+
                 leaveTypeName,
+
                 leaveRequest.getStartDate(),
+
                 leaveRequest.getEndDate(),
+
                 leaveRequest.getReason(),
-                leaveRequest.getStatus().toString(),
-                leaveRequest.getYear()
+
+                leaveRequest.getStatus(),
+
+                leaveRequest.getCreatedAt(),
+
+                leaveRequest.getSubmittedAt(),
+
+                approverName,
+
+                leaveRequest.getDecisionAt()
+
+
         );
     }
 }

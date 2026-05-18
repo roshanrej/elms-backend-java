@@ -1,5 +1,6 @@
 package com.elms.elms_backend.service.auth;
 
+import com.elms.elms_backend.dto.auth.LogoutRequestDTO;
 import com.elms.elms_backend.entity.RefreshTokenEntity;
 import com.elms.elms_backend.entity.UserEntity;
 import com.elms.elms_backend.repository.auth.RefreshTokenRepository;
@@ -75,5 +76,17 @@ public class RefreshTokenServiceImpl
         }
 
         return refreshToken;
+    }
+
+    @Override
+    public void revokeRefreshToken(String refreshToken) {
+
+        RefreshTokenEntity refreshTokenEntity = refreshTokenRepo.findByToken(refreshToken).orElseThrow(()->new IllegalArgumentException("Invalid token"));
+        if (refreshTokenEntity.isRevoked()) {
+            throw new RuntimeException("Refresh token revoked");
+        }
+        refreshTokenEntity.setRevoked(true);
+        refreshTokenRepo.save(refreshTokenEntity);
+
     }
 }

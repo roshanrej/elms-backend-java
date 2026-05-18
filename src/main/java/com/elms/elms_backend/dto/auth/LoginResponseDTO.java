@@ -13,6 +13,14 @@ public class LoginResponseDTO {
     private String department;
     private String accessToken;
     private String refreshToken;
+
+    public LoginResponseDTO(String name, String email, String role, String department) {
+
+ this.name = name;
+ this.role  = role;
+ this.email = email;
+ this.department = department;
+    }
 }
 
 

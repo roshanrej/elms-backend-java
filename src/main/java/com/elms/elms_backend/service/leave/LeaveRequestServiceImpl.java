@@ -6,6 +6,7 @@ import com.elms.elms_backend.entity.LeaveRequestEntity;
 import com.elms.elms_backend.entity.LeaveTypeEntity;
 import com.elms.elms_backend.entity.UserEntity;
 import com.elms.elms_backend.entity.enums.LeaveRequestStatusEnum;
+import com.elms.elms_backend.entity.enums.RoleEnum;
 import com.elms.elms_backend.mapper.leave.LeaveRequestMapper;
 import com.elms.elms_backend.repository.leave.LeaveRequestRepository;
 import com.elms.elms_backend.service.leavetype.LeaveTypeService;
@@ -14,7 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import com.elms.elms_backend.entity.enums.RoleEnum;
+import java.util.List;
 
 @Service
 public class LeaveRequestServiceImpl implements LeaveRequestService {
@@ -27,7 +28,8 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     public LeaveRequestServiceImpl(
             LeaveRequestRepository leaveRequestRepo,
             UserService userService,
-            LeaveTypeService leaveTypeService, LeaveRequestMapper leaveRequestMapper
+            LeaveTypeService leaveTypeService,
+            LeaveRequestMapper leaveRequestMapper
     ) {
         this.leaveRequestRepo = leaveRequestRepo;
         this.userService = userService;
@@ -227,8 +229,9 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
         return null;
     }
-    @PreAuthorize("hasAnyRole('MANAGER', 'EMPLOYEE')")
 
+
+    @PreAuthorize("hasAnyRole('MANAGER', 'EMPLOYEE')")
     @Override
     public LeaveResponseDTO cancelLeaveRequest(Long id) {
         LeaveRequestEntity leaveRequest = leaveRequestRepo.findById(id).orElseThrow(()-> new RuntimeException("Invalid leave"));
@@ -236,7 +239,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         if(user.getRole().getName() == RoleEnum.MANAGER){
          if(leaveRequest.getStatus() == LeaveRequestStatusEnum.CANCELLED){
              throw new IllegalStateException("Leave already cancelled");
-         }y
+         }
          
         }
         else if (user.getRole().getName() == RoleEnum.EMPLOYEE){
@@ -245,8 +248,18 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
             }
             leaveRequest.setStatus(LeaveRequestStatusEnum.CANCELLED) ;
         }
+        return leaveRequestMapper.mapToResponse(leaveRequest);
 
-        return null;
+
+    }
+
+    @Override
+    public List<LeaveResponseDTO> getEmployeeLeaves() {
+        UserEntity user = userService.getAuthenticatedUser();
+        List<LeaveRequestEntity> leaves = leaveRequestRepo.findByUser(user);
+        return leaves.stream()
+                .map(leaveRequestEntity -> leaveRequestMapper.mapToResponse(leaveRequestEntity))
+                .toList();
     }
 
 

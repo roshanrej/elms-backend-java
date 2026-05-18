@@ -6,6 +6,8 @@ import com.elms.elms_backend.service.leave.LeaveRequestService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/leaves")
 public class LeaveRequestController {
@@ -16,6 +18,10 @@ public class LeaveRequestController {
         this.service = service;
     }
 
+    @GetMapping()
+    public List<LeaveResponseDTO> getEmployeeLeaves(){
+        return service.getEmployeeLeaves();
+    }
     @PostMapping("/draft")
     public LeaveResponseDTO createLeaveDraft(@RequestBody LeaveRequestDTO leaveRequestDto) {
         return service.createLeaveDraft(leaveRequestDto);
@@ -40,6 +46,21 @@ public class LeaveRequestController {
                         .submitLeaveRequest(
                                 id,
                                 leaveRequestDto
+                        );
+
+        return ResponseEntity.ok(response);
+    }
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<LeaveResponseDTO>
+    cancelLeaveRequest(
+            @PathVariable Long id
+
+    ) {
+
+        LeaveResponseDTO response =
+                service
+                        .cancelLeaveRequest(
+                                id
                         );
 
         return ResponseEntity.ok(response);

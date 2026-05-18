@@ -102,10 +102,6 @@ public class JwtAuthenticationFilter
         email =
                 jwtService.extractUsername(jwtToken);
 
-        System.out.println("JWT FILTER HIT");
-        System.out.println("EMAIL: " + email);
-        System.out.println("AUTH-HEADER: " + authHeader);
-
         /**
          * Prevent duplicate authentication
          * reconstruction if context already exists.
