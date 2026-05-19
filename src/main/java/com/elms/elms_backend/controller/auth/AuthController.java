@@ -40,7 +40,7 @@ public class AuthController {
         this.refreshTokenService = refreshTokenService;
     }
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponseDTO<?>> logoutUser(LogoutRequestDTO logoutRequestDTO){
+    public ResponseEntity<ApiResponseDTO<?>> logoutUser(@RequestBody LogoutRequestDTO logoutRequestDTO){
         authService.logoutUser(logoutRequestDTO);
         return ResponseHandler.success(
                 null,

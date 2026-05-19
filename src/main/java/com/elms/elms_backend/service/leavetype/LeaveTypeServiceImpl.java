@@ -1,15 +1,18 @@
 package com.elms.elms_backend.service.leavetype;
 
+import com.elms.elms_backend.dto.leavetype.LeaveTypeResponseDTO;
 import com.elms.elms_backend.entity.LeaveTypeEntity;
 import com.elms.elms_backend.entity.enums.LeaveTypeStatusEnum;
 import com.elms.elms_backend.repository.leave.LeaveTypeRepository;
 
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * Service implementation responsible for
  * leave type resolution and validation logic.
- *
+ * <p>
  * This service acts as the domain boundary between:
  * - leave request workflow orchestration
  * - leave type persistence access
@@ -27,7 +30,7 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 
     /**
      * Resolves leave type if present.
-     *
+     * <p>
      * Draft leave requests are allowed to omit
      * leave type information temporarily.
      *
@@ -51,7 +54,7 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
     /**
      * Resolves and validates leave type for
      * submission workflow operations.
-     *
+     * <p>
      * Submitted leave requests must reference
      * an active leave type.
      *
@@ -75,6 +78,14 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
         }
 
         return leaveType;
+    }
+
+    @Override
+    public List<LeaveTypeResponseDTO> getLeaveTypes() {
+        List<LeaveTypeEntity> leaveTypes = leaveTypeRepo.findAll();
+        return leaveTypes
+                .stream()
+                .map(leaveTypeEntity -> new LeaveTypeResponseDTO(leaveTypeEntity.getId(),leaveTypeEntity.getName(),leaveTypeEntity.getStatus())).toList();
     }
 
     /**

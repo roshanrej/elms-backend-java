@@ -1,0 +1,1 @@
+SELECT lt.name,lt.status,lp.allocated_leave,lp.year from leave_policies as lp left join leave_types as lt on lt.id = lp.leave_type_id where lp.year = 2026
