@@ -22,10 +22,10 @@ public class LeavePolicyEntity {
     private LeaveTypeEntity leaveType;
 
     @Column(name="year")
-    private Year year;
+    private Integer year;
 
     @Column(name="allocated_leave")
-    private int allocatedLeave;
+    private Integer allocatedLeave;
 
 
 }

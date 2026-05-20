@@ -1,5 +1,6 @@
 package com.elms.elms_backend.dto.leave;
 
+import com.elms.elms_backend.entity.enums.LeaveActionEnum;
 import com.elms.elms_backend.entity.enums.LeaveRequestStatusEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -32,4 +34,6 @@ public class LeaveResponseDTO {
     private String approverName;
 
     private LocalDateTime decisionAt;
+    private List<LeaveActionEnum> allowedActions;
+
 }

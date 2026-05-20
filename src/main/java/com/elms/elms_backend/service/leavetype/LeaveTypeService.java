@@ -8,5 +8,5 @@ import java.util.List;
 public interface LeaveTypeService {
     LeaveTypeEntity resolveOptionalLeaveType(String leaveTypeName);
     LeaveTypeEntity resolveLeaveType(String leaveTypeName);
-    List<LeaveTypeResponseDTO> getLeaveTypes();
+
 }

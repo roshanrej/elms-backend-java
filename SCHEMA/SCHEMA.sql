@@ -1,273 +1,288 @@
--- MySQL dump
---   Database: elms
--- ------------------------------------------------------
--- Server version	9.7.0
-create database elms;
-use elms;
+CREATE DATABASE IF NOT EXISTS elms;
 
+USE elms;
 
-CREATE TABLE `departments` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) NOT NULL,
-  `status` varchar(20) NOT NULL DEFAULT 'ACTIVE',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`)
-);
+CREATE TABLE roles (
+                       id BIGINT NOT NULL AUTO_INCREMENT,
+                       name VARCHAR(100) NOT NULL,
 
--- ------------------------------------------------------
+                       PRIMARY KEY (id),
+                       UNIQUE KEY uq_roles_name (name)
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_0900_ai_ci;
 
- 
 
-CREATE TABLE `roles` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`)
-);
+CREATE TABLE departments (
+                             id BIGINT NOT NULL AUTO_INCREMENT,
+                             name VARCHAR(100) NOT NULL,
+                             status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+                             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                             updated_at TIMESTAMP NULL DEFAULT NULL,
 
--- ------------------------------------------------------
+                             PRIMARY KEY (id),
+                             UNIQUE KEY uq_departments_name (name)
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_0900_ai_ci;
 
 
+CREATE TABLE users (
+                       id BIGINT NOT NULL AUTO_INCREMENT,
+                       name VARCHAR(100) NOT NULL,
+                       email VARCHAR(150) NOT NULL,
+                       password_hash TEXT NOT NULL,
 
-CREATE TABLE `users` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) NOT NULL,
-  `email` varchar(150) NOT NULL,
-  `password_hash` text NOT NULL,
-  `role_id` bigint NOT NULL,
-  `department_id` bigint DEFAULT NULL,
-  `status` varchar(20) NOT NULL DEFAULT 'ACTIVE',
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `email` (`email`),
-  KEY `idx_users_role_id` (`role_id`),
-  KEY `idx_users_department_id` (`department_id`),
+                       role_id BIGINT NOT NULL,
+                       department_id BIGINT DEFAULT NULL,
 
-  CONSTRAINT `fk_user_department`
-      FOREIGN KEY (`department_id`)
-      REFERENCES `departments` (`id`),
+                       status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
 
-  CONSTRAINT `fk_user_role`
-      FOREIGN KEY (`role_id`)
-      REFERENCES `roles` (`id`)
-);
+                       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                       updated_at TIMESTAMP NULL DEFAULT NULL,
 
--- ------------------------------------------------------
+                       PRIMARY KEY (id),
 
+                       UNIQUE KEY uq_users_email (email),
 
+                       KEY idx_users_role_id (role_id),
+                       KEY idx_users_department_id (department_id),
 
-CREATE TABLE `leave_types` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) NOT NULL,
-  `status` enum('ACTIVE','INACTIVE')
-      NOT NULL DEFAULT 'ACTIVE',
+                       CONSTRAINT fk_user_role
+                           FOREIGN KEY (role_id)
+                               REFERENCES roles(id),
 
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`)
-);
+                       CONSTRAINT fk_user_department
+                           FOREIGN KEY (department_id)
+                               REFERENCES departments(id)
 
--- ------------------------------------------------------
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_0900_ai_ci;
 
 
+CREATE TABLE leave_types (
+                             id BIGINT NOT NULL AUTO_INCREMENT,
 
-CREATE TABLE `leave_requests` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
+                             name VARCHAR(50) NOT NULL,
 
-  `user_id` bigint NOT NULL,
+                             status ENUM(
+        'ACTIVE',
+        'INACTIVE'
+    ) NOT NULL DEFAULT 'ACTIVE',
 
-  `leave_type_id` bigint DEFAULT NULL,
+                             PRIMARY KEY (id),
 
-  `start_date` date DEFAULT NULL,
-  `end_date` date DEFAULT NULL,
+                             UNIQUE KEY uq_leave_types_name (name)
 
-  `reason` varchar(50) DEFAULT NULL,
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_0900_ai_ci;
 
-  `status` varchar(30) NOT NULL,
 
-  `year` int DEFAULT NULL,
+CREATE TABLE leave_policies (
+                                id BIGINT NOT NULL AUTO_INCREMENT,
 
-  `created_at`
-      timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                year INT NOT NULL,
 
-  `submitted_at`
-      timestamp NULL DEFAULT NULL,
+                                leave_type_id BIGINT NOT NULL,
 
-  `decision_at`
-      timestamp NULL DEFAULT NULL,
+                                allocated_leave INT NOT NULL,
 
-  `approver_id`
-      bigint DEFAULT NULL,
+                                PRIMARY KEY (id),
 
-  PRIMARY KEY (`id`),
+                                UNIQUE KEY uq_policy (
+                                    year,
+                                    leave_type_id
+                                    ),
 
-  KEY `idx_leave_requests_user_id` (`user_id`),
-  KEY `idx_leave_requests_leave_type_id` (`leave_type_id`),
-  KEY `idx_leave_requests_approver_id` (`approver_id`),
+                                KEY idx_leave_policies_leave_type_id (
+        leave_type_id
+    ),
 
-  CONSTRAINT `fk_leave_approver`
-      FOREIGN KEY (`approver_id`)
-      REFERENCES `users` (`id`),
+                                CONSTRAINT fk_policy_leave_type
+                                    FOREIGN KEY (leave_type_id)
+                                        REFERENCES leave_types(id),
 
-  CONSTRAINT `fk_leave_type`
-      FOREIGN KEY (`leave_type_id`)
-      REFERENCES `leave_types` (`id`),
+                                CONSTRAINT chk_allocated_leave
+                                    CHECK (allocated_leave >= 0)
 
-  CONSTRAINT `fk_leave_user`
-      FOREIGN KEY (`user_id`)
-      REFERENCES `users` (`id`),
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_0900_ai_ci;
 
-  CONSTRAINT `chk_dates`
-      CHECK ((`end_date` >= `start_date`))
-);
 
--- ------------------------------------------------------
+CREATE TABLE leave_requests (
+                                id BIGINT NOT NULL AUTO_INCREMENT,
 
+                                user_id BIGINT NOT NULL,
 
-CREATE TABLE `leave_comments` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
+                                leave_type_id BIGINT DEFAULT NULL,
 
-  `leave_id` bigint NOT NULL,
+                                approver_id BIGINT DEFAULT NULL,
 
-  `user_id` bigint NOT NULL,
+                                start_date DATE DEFAULT NULL,
 
-  `message` text NOT NULL,
+                                end_date DATE DEFAULT NULL,
 
-  `created_at`
-      timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+                                reason VARCHAR(50) DEFAULT NULL,
 
-  PRIMARY KEY (`id`),
+                                status VARCHAR(30) NOT NULL,
 
-  KEY `idx_leave_comments_leave_id` (`leave_id`),
-  KEY `idx_leave_comments_user_id` (`user_id`),
+                                year INT DEFAULT NULL,
 
-  CONSTRAINT `fk_comment_leave`
-      FOREIGN KEY (`leave_id`)
-      REFERENCES `leave_requests` (`id`),
+                                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-  CONSTRAINT `fk_comment_user`
-      FOREIGN KEY (`user_id`)
-      REFERENCES `users` (`id`)
-);
+                                submitted_at TIMESTAMP NULL DEFAULT NULL,
 
--- ------------------------------------------------------
+                                decision_at TIMESTAMP NULL DEFAULT NULL,
 
+                                PRIMARY KEY (id),
 
+                                KEY idx_leave_requests_user_id (user_id),
 
-CREATE TABLE `leave_policies` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
+                                KEY idx_leave_requests_leave_type_id (leave_type_id),
 
-  `year` int NOT NULL,
+                                KEY idx_leave_requests_approver_id (approver_id),
 
-  `leave_type_id` bigint NOT NULL,
+                                CONSTRAINT fk_leave_user
+                                    FOREIGN KEY (user_id)
+                                        REFERENCES users(id),
 
-  `allocated_leave` int NOT NULL,
+                                CONSTRAINT fk_leave_type
+                                    FOREIGN KEY (leave_type_id)
+                                        REFERENCES leave_types(id),
 
-  PRIMARY KEY (`id`),
+                                CONSTRAINT fk_leave_approver
+                                    FOREIGN KEY (approver_id)
+                                        REFERENCES users(id),
 
-  UNIQUE KEY `uq_policy`
-      (`year`,`leave_type_id`),
+                                CONSTRAINT chk_leave_dates
+                                    CHECK (end_date >= start_date)
 
-  KEY `idx_leave_policies_leave_type_id`
-      (`leave_type_id`),
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_0900_ai_ci;
 
-  CONSTRAINT `fk_policy_leave_type`
-      FOREIGN KEY (`leave_type_id`)
-      REFERENCES `leave_types` (`id`),
 
-  CONSTRAINT `leave_policies_chk_1`
-      CHECK ((`allocated_leave` >= 0))
-);
+CREATE TABLE leave_comments (
+                                id BIGINT NOT NULL AUTO_INCREMENT,
 
--- ------------------------------------------------------
+                                leave_id BIGINT NOT NULL,
 
+                                user_id BIGINT NOT NULL,
 
+                                message TEXT NOT NULL,
 
-CREATE TABLE `leave_audit_logs` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
+                                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-  `leave_id` bigint NOT NULL,
+                                PRIMARY KEY (id),
 
-  `action` varchar(50) NOT NULL,
+                                KEY idx_leave_comments_leave_id (leave_id),
 
-  `actor_id` bigint NOT NULL,
+                                KEY idx_leave_comments_user_id (user_id),
 
-  `actor_role_id` bigint NOT NULL,
+                                CONSTRAINT fk_comment_leave
+                                    FOREIGN KEY (leave_id)
+                                        REFERENCES leave_requests(id),
 
-  `created_at`
-      timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+                                CONSTRAINT fk_comment_user
+                                    FOREIGN KEY (user_id)
+                                        REFERENCES users(id)
 
-  `metadata` json DEFAULT NULL,
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_0900_ai_ci;
 
-  PRIMARY KEY (`id`),
 
-  KEY `idx_leave_audit_leave_id` (`leave_id`),
-  KEY `idx_leave_audit_actor_id` (`actor_id`),
-  KEY `idx_leave_audit_actor_role_id` (`actor_role_id`),
+CREATE TABLE leave_audit_logs (
+                                  id BIGINT NOT NULL AUTO_INCREMENT,
 
-  CONSTRAINT `fk_audit_actor`
-      FOREIGN KEY (`actor_id`)
-      REFERENCES `users` (`id`),
+                                  leave_id BIGINT NOT NULL,
 
-  CONSTRAINT `fk_audit_actor_role`
-      FOREIGN KEY (`actor_role_id`)
-      REFERENCES `roles` (`id`),
+                                  actor_id BIGINT NOT NULL,
 
-  CONSTRAINT `fk_audit_leave`
-      FOREIGN KEY (`leave_id`)
-      REFERENCES `leave_requests` (`id`)
-);
+                                  actor_role_id BIGINT NOT NULL,
 
--- ------------------------------------------------------
+                                  action VARCHAR(50) NOT NULL,
 
+                                  metadata JSON DEFAULT NULL,
 
+                                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-CREATE TABLE `user_audit_logs` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
+                                  PRIMARY KEY (id),
 
-  `user_id` bigint NOT NULL,
+                                  KEY idx_leave_audit_leave_id (leave_id),
 
-  `action` varchar(50) NOT NULL,
+                                  KEY idx_leave_audit_actor_id (actor_id),
 
-  `created_at`
-      timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+                                  KEY idx_leave_audit_actor_role_id (actor_role_id),
 
-  `metadata` json DEFAULT NULL,
+                                  CONSTRAINT fk_audit_leave
+                                      FOREIGN KEY (leave_id)
+                                          REFERENCES leave_requests(id),
 
-  PRIMARY KEY (`id`),
+                                  CONSTRAINT fk_audit_actor
+                                      FOREIGN KEY (actor_id)
+                                          REFERENCES users(id),
 
-  KEY `idx_user_audit_user_id` (`user_id`),
+                                  CONSTRAINT fk_audit_actor_role
+                                      FOREIGN KEY (actor_role_id)
+                                          REFERENCES roles(id)
 
-  CONSTRAINT `fk_user_audit_user`
-      FOREIGN KEY (`user_id`)
-      REFERENCES `users` (`id`)
-);
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_0900_ai_ci;
 
--- ------------------------------------------------------
 
+CREATE TABLE user_audit_logs (
+                                 id BIGINT NOT NULL AUTO_INCREMENT,
 
-CREATE TABLE `refresh_tokens` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
+                                 user_id BIGINT NOT NULL,
 
-  `token` varchar(512) NOT NULL,
+                                 action VARCHAR(50) NOT NULL,
 
-  `user_id` bigint NOT NULL,
+                                 metadata JSON DEFAULT NULL,
 
-  `expiry_date` timestamp NOT NULL,
+                                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-  `revoked` tinyint(1)
-      NOT NULL DEFAULT '0',
+                                 PRIMARY KEY (id),
 
-  PRIMARY KEY (`id`),
+                                 KEY idx_user_audit_user_id (user_id),
 
-  UNIQUE KEY `token` (`token`),
+                                 CONSTRAINT fk_user_audit_user
+                                     FOREIGN KEY (user_id)
+                                         REFERENCES users(id)
 
-  KEY `fk_refresh_token_user` (`user_id`),
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_0900_ai_ci;
 
-  CONSTRAINT `fk_refresh_token_user`
-      FOREIGN KEY (`user_id`)
-      REFERENCES `users` (`id`)
-      ON DELETE CASCADE
-);
+
+CREATE TABLE refresh_tokens (
+                                id BIGINT NOT NULL AUTO_INCREMENT,
+
+                                token VARCHAR(512) NOT NULL,
+
+                                user_id BIGINT NOT NULL,
+
+                                expiry_date TIMESTAMP NOT NULL,
+
+                                revoked BOOLEAN NOT NULL DEFAULT FALSE,
+
+                                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+                                PRIMARY KEY (id),
+
+                                UNIQUE KEY uq_refresh_token_token (token),
+
+                                KEY idx_refresh_token_user_id (user_id),
+
+                                CONSTRAINT fk_refresh_token_user
+                                    FOREIGN KEY (user_id)
+                                        REFERENCES users(id)
+                                        ON DELETE CASCADE
+
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_0900_ai_ci;

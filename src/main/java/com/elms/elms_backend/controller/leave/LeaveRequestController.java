@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/leaves")
+@RequestMapping("/api/leave-requests")
 public class LeaveRequestController {
 
     private final LeaveRequestService service;
@@ -18,9 +18,13 @@ public class LeaveRequestController {
         this.service = service;
     }
 
-    @GetMapping()
-    public List<LeaveResponseDTO> getEmployeeLeaves(){
-        return service.getEmployeeLeaves();
+    @GetMapping("/me")
+    public List<LeaveResponseDTO> getEmployeeLeaveRequests(){
+        return service.getEmployeeLeaveRequests();
+    }
+    @GetMapping("/me/drafts")
+    public List<LeaveResponseDTO> getEmployeeLeaveDrafts(){
+        return service.getEmployeeLeaveDrafts();
     }
     @PostMapping("/draft")
     public LeaveResponseDTO createLeaveDraft(@RequestBody LeaveRequestDTO leaveRequestDto) {
@@ -35,7 +39,7 @@ public class LeaveRequestController {
 
     @PostMapping("/{id}/submit")
     public ResponseEntity<LeaveResponseDTO>
-    submitExistingLeaveRequest(
+    submitLeaveRequest(
             @PathVariable Long id,
             @RequestBody
             LeaveRequestDTO leaveRequestDto
@@ -50,7 +54,22 @@ public class LeaveRequestController {
 
         return ResponseEntity.ok(response);
     }
-    @PostMapping("/{id}/cancel")
+    @PostMapping("/{id}/request-cancel")
+    public ResponseEntity<LeaveResponseDTO>
+    requestLeaveCancel(
+            @PathVariable Long id
+
+    ) {
+
+        LeaveResponseDTO response =
+                service
+                        .requestLeaveCancel(
+                                id
+                        );
+
+        return ResponseEntity.ok(response);
+    }
+    @PostMapping("/{id}/approve-cancel")
     public ResponseEntity<LeaveResponseDTO>
     cancelLeaveRequest(
             @PathVariable Long id
@@ -59,10 +78,26 @@ public class LeaveRequestController {
 
         LeaveResponseDTO response =
                 service
-                        .cancelLeaveRequest(
+                        .approveCancelRequest(
                                 id
                         );
 
         return ResponseEntity.ok(response);
     }
+    @PostMapping("/{id}/reject-cancel")
+    public ResponseEntity<LeaveResponseDTO>
+    rejectLeaveCancel(
+            @PathVariable Long id
+
+    ) {
+
+        LeaveResponseDTO response =
+                service
+                        .rejectLeaveRequest(
+                                id
+                        );
+
+        return ResponseEntity.ok(response);
+    }
+
 }

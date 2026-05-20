@@ -2,7 +2,11 @@ package com.elms.elms_backend.mapper.leave;
 
 import com.elms.elms_backend.dto.leave.LeaveResponseDTO;
 import com.elms.elms_backend.entity.LeaveRequestEntity;
+import com.elms.elms_backend.entity.enums.LeaveActionEnum;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class LeaveRequestMapper {
@@ -27,7 +31,7 @@ public class LeaveRequestMapper {
                 leaveRequest.getApprover() != null
                         ? leaveRequest.getApprover().getName()
                         : null;
-
+        List<LeaveActionEnum> allowedActions = new ArrayList<LeaveActionEnum>();
         return new LeaveResponseDTO(
                 leaveRequest.getId(),
 
@@ -47,7 +51,9 @@ public class LeaveRequestMapper {
 
                 approverName,
 
-                leaveRequest.getDecisionAt()
+                leaveRequest.getDecisionAt(),
+
+                allowedActions
 
 
         );

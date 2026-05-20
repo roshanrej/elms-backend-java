@@ -40,7 +40,7 @@ public class LeaveAuditLogEntity {
     @Column(name="created_at", nullable = false)
     private LocalDateTime createdAt;
 
-  @JdbcTypeCode(SqlTypes.JSON)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name="metadata")
     private Map<String, Object> metadata;
 

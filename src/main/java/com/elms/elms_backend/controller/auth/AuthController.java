@@ -5,6 +5,7 @@ import com.elms.elms_backend.dto.auth.LoginRequestDTO;
 import com.elms.elms_backend.dto.auth.LoginResponseDTO;
 import com.elms.elms_backend.dto.auth.LogoutRequestDTO;
 import com.elms.elms_backend.dto.token.AccessTokenRequestDTO;
+import com.elms.elms_backend.dto.token.AccessTokenResponseDTO;
 import com.elms.elms_backend.entity.RefreshTokenEntity;
 import com.elms.elms_backend.entity.UserEntity;
 import com.elms.elms_backend.security.JwtService;
@@ -110,13 +111,13 @@ public class AuthController {
 
         UserEntity user = refreshToken.getUser();
 
-        String newAccessToken =
-                jwtService.generateAccessToken(
+          AccessTokenResponseDTO accessTokenResponseDTO =
+                new AccessTokenResponseDTO(jwtService.generateAccessToken(
                         new UserPrincipal(user)
-                );
+                ));
 
         return ResponseHandler.success(
-                newAccessToken,
+                accessTokenResponseDTO,
                 "Access token refreshed successfully",
                 HttpStatus.OK
         );

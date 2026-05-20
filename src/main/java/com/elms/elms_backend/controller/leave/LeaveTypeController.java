@@ -17,8 +17,5 @@ public class LeaveTypeController {
         this.leaveTypeService = leaveTypeService;
     }
 
-    @GetMapping("/")
-    public List<LeaveTypeResponseDTO> getLeaveTypes(){
-      return leaveTypeService.getLeaveTypes();
-    }
+
 }

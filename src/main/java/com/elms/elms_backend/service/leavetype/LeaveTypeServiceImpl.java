@@ -80,13 +80,8 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
         return leaveType;
     }
 
-    @Override
-    public List<LeaveTypeResponseDTO> getLeaveTypes() {
-        List<LeaveTypeEntity> leaveTypes = leaveTypeRepo.findAll();
-        return leaveTypes
-                .stream()
-                .map(leaveTypeEntity -> new LeaveTypeResponseDTO(leaveTypeEntity.getId(),leaveTypeEntity.getName(),leaveTypeEntity.getStatus())).toList();
-    }
+
+
 
     /**
      * Retrieves leave type entity by name.
@@ -101,7 +96,7 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
         return leaveTypeRepo.findByName(leaveTypeName)
                 .orElseThrow(() ->
                         new RuntimeException(
-                                "Leave type not found"
+                                "Invalid leave type"
                         )
                 );
     }

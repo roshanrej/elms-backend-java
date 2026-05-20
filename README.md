@@ -80,9 +80,9 @@ This structure improves:
 
 ## Prerequisites
 
-- Java 21+
+- Java
 - Maven
-- MySQL
+- Relational Databases(MySQL,PostgreSQL)
 
 ---
 
