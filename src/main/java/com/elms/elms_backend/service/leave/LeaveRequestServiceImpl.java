@@ -1,27 +1,27 @@
 package com.elms.elms_backend.service.leave;
 
-import com.elms.elms_backend.dto.leave.LeaveRequestDTO;
-import com.elms.elms_backend.dto.leave.LeaveResponseDTO;
-import com.elms.elms_backend.entity.LeavePolicyEntity;
-import com.elms.elms_backend.entity.LeaveRequestEntity;
-import com.elms.elms_backend.entity.LeaveTypeEntity;
-import com.elms.elms_backend.entity.UserEntity;
-import com.elms.elms_backend.entity.enums.LeaveActionEnum;
+import com.elms.elms_backend.dto.leave.CreateLeaveRequestDTO;
+import com.elms.elms_backend.dto.leave.CreateLeaveRequestResponseDTO;
+import com.elms.elms_backend.dto.leavepolicy.CreateLeavePolicyDTO;
+import com.elms.elms_backend.entity.*;
+import com.elms.elms_backend.entity.enums.LeaveRequestActionEnum;
 import com.elms.elms_backend.entity.enums.LeaveRequestStatusEnum;
 import com.elms.elms_backend.entity.enums.RoleEnum;
 import com.elms.elms_backend.mapper.leave.LeaveRequestMapper;
+import com.elms.elms_backend.repository.leave.LeaveBalanceRepository;
 import com.elms.elms_backend.repository.leave.LeavePolicyRepository;
 import com.elms.elms_backend.repository.leave.LeaveRequestRepository;
-import com.elms.elms_backend.service.leavepolicy.LeavePolicyService;
 import com.elms.elms_backend.service.leavetype.LeaveTypeService;
 import com.elms.elms_backend.service.user.UserService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Year;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -38,12 +38,13 @@ public class LeaveRequestServiceImpl
 
     private final LeavePolicyRepository leavePolicyRepo;
 
+    private final LeaveBalanceRepository leaveBalanceRepo;
 
     public LeaveRequestServiceImpl(
             LeaveRequestRepository leaveRequestRepo,
             UserService userService,
             LeaveTypeService leaveTypeService,
-            LeaveRequestMapper leaveRequestMapper, LeavePolicyRepository leavePolicyRepo
+            LeaveRequestMapper leaveRequestMapper, LeavePolicyRepository leavePolicyRepo, LeaveBalanceRepository leaveBalanceRepo
     ) {
 
         this.leaveRequestRepo = leaveRequestRepo;
@@ -52,25 +53,27 @@ public class LeaveRequestServiceImpl
         this.leaveRequestMapper = leaveRequestMapper;
         this.leavePolicyRepo = leavePolicyRepo;
 
+        this.leaveBalanceRepo = leaveBalanceRepo;
     }
 
 
     /**
      * Creates leave draft for authenticated employee.
      *
-     * @param leaveRequestDto incoming leave draft payload
+     * @param createLeaveRequestDto incoming leave draft payload
      * @return persisted leave draft projection
      */
     @PreAuthorize("hasRole('EMPLOYEE')")
     @Override
-    public LeaveResponseDTO createLeaveDraft(
-            LeaveRequestDTO leaveRequestDto
+    @Transactional
+    public CreateLeaveRequestResponseDTO createLeaveDraft(
+            CreateLeaveRequestDTO createLeaveRequestDto
     ) {
 
         LeaveTypeEntity leaveType =
                 leaveTypeService
                         .resolveOptionalLeaveType(
-                                leaveRequestDto.getLeaveType()
+                                createLeaveRequestDto.getLeaveType()
                         );
 
         UserEntity user =
@@ -78,7 +81,7 @@ public class LeaveRequestServiceImpl
 
         Integer year =
                 extractYear(
-                        leaveRequestDto.getStartDate()
+                        createLeaveRequestDto.getStartDate()
                 );
 
         LeaveRequestEntity request =
@@ -86,13 +89,13 @@ public class LeaveRequestServiceImpl
                         .user(user)
                         .leaveType(leaveType)
                         .startDate(
-                                leaveRequestDto.getStartDate()
+                                createLeaveRequestDto.getStartDate()
                         )
                         .endDate(
-                                leaveRequestDto.getEndDate()
+                                createLeaveRequestDto.getEndDate()
                         )
                         .reason(
-                                leaveRequestDto.getReason()
+                                createLeaveRequestDto.getReason()
                         )
                         .status(
                                 LeaveRequestStatusEnum.DRAFT
@@ -110,57 +113,61 @@ public class LeaveRequestServiceImpl
 
 
     /**
-     * Gets total consumed leaves for leave type
-     *
-     * @param leaveTypeId id for leaveType
-     * @return persisted number of leave days for type
-     */
-    @Override
-    public Integer getTotalConsumedLeaves(Long leaveTypeId, Integer year) {
-
-        return leaveRequestRepo.getTotalConsumedLeaves(leaveTypeId,year);
-    }
-
-    /**
      * Creates and submits new leave request.
      *
-     * @param leaveRequestDto incoming leave submission payload
+     * @param createLeaveRequestDto incoming leave submission payload
      * @return persisted submitted leave projection
      */
     @PreAuthorize("hasRole('EMPLOYEE')")
     @Override
-    public LeaveResponseDTO submitNewLeaveRequest(
-            LeaveRequestDTO leaveRequestDto
+    @Transactional
+    public CreateLeaveRequestResponseDTO submitNewLeaveRequest(
+            CreateLeaveRequestDTO createLeaveRequestDto
     ) {
 
-        validateSubmissionPayload(leaveRequestDto);
+        validateSubmissionPayload(createLeaveRequestDto);
 
         LeaveTypeEntity leaveType =
                 leaveTypeService.resolveLeaveType(
-                        leaveRequestDto.getLeaveType()
+                        createLeaveRequestDto.getLeaveType()
                 );
+        Integer year =
+                extractYear(
+                        createLeaveRequestDto.getStartDate()
+                );
+        LeavePolicyEntity leavePolicy =
+                leavePolicyRepo.findByLeaveTypeAndYear(leaveType, year);
 
-//        LeavePolicyEntity leavePolicyEntity = leavePolicyRepo.findBy
         UserEntity user =
                 userService.getAuthenticatedUser();
 
-        Integer year =
-                extractYear(
-                        leaveRequestDto.getStartDate()
-                );
+        LeaveBalanceEntity leaveBalance = leaveBalanceRepo.findByUserAndLeavePolicy(user, leavePolicy);
+        Integer noOfDaysRequested = calculateLeaveDays(createLeaveRequestDto);
+
+        if (leaveBalance.getRemainingLeave() < noOfDaysRequested) {
+            throw new IllegalStateException("Leave balance insufficient");
+        }
+
+        Integer consumedLeave = leaveBalance.getConsumedLeave() + noOfDaysRequested;
+        Integer remainingLeave = leaveBalance.getRemainingLeave() - noOfDaysRequested;
+
+        leaveBalance.setConsumedLeave(consumedLeave);
+        leaveBalance.setRemainingLeave(remainingLeave);
+        leaveBalance.setUpdatedAt(LocalDateTime.now());
+        leaveBalanceRepo.save(leaveBalance);
 
         LeaveRequestEntity request =
                 LeaveRequestEntity.builder()
                         .user(user)
                         .leaveType(leaveType)
                         .startDate(
-                                leaveRequestDto.getStartDate()
+                                createLeaveRequestDto.getStartDate()
                         )
                         .endDate(
-                                leaveRequestDto.getEndDate()
+                                createLeaveRequestDto.getEndDate()
                         )
                         .reason(
-                                leaveRequestDto.getReason()
+                                createLeaveRequestDto.getReason()
                         )
                         .status(
                                 LeaveRequestStatusEnum.PENDING
@@ -180,15 +187,16 @@ public class LeaveRequestServiceImpl
     /**
      * Submits existing leave draft.
      *
-     * @param id leave request identifier
-     * @param leaveRequestDto updated leave submission payload
+     * @param id                    leave request identifier
+     * @param createLeaveRequestDto updated leave submission payload
      * @return submitted leave projection
      */
     @PreAuthorize("hasRole('EMPLOYEE')")
     @Override
-    public LeaveResponseDTO submitLeaveRequest(
+    @Transactional
+    public CreateLeaveRequestResponseDTO submitLeaveRequest(
             Long id,
-            LeaveRequestDTO leaveRequestDto
+            CreateLeaveRequestDTO createLeaveRequestDto
     ) {
 
         LeaveRequestEntity leaveRequest =
@@ -201,35 +209,53 @@ public class LeaveRequestServiceImpl
 
         validateAction(
                 leaveRequest,
-                LeaveActionEnum.SUBMIT
+                LeaveRequestActionEnum.SUBMIT
         );
 
         validateSubmissionPayload(
-                leaveRequestDto
+                createLeaveRequestDto
         );
 
         LeaveTypeEntity leaveType =
                 leaveTypeService.resolveLeaveType(
-                        leaveRequestDto.getLeaveType()
+                        createLeaveRequestDto.getLeaveType()
                 );
+
 
         Integer year =
                 extractYear(
-                        leaveRequestDto.getStartDate()
+                        createLeaveRequestDto.getStartDate()
                 );
 
+
+        LeavePolicyEntity leavePolicy =
+                leavePolicyRepo.findByLeaveTypeAndYear(leaveType, year);
+
+        UserEntity user =
+                userService.getAuthenticatedUser();
+        LeaveBalanceEntity leaveBalance = leaveBalanceRepo.findByUserAndLeavePolicy(user, leavePolicy);
+        Integer noOfDaysRequested = calculateLeaveDays(createLeaveRequestDto);
+        if (leaveBalance.getRemainingLeave() < noOfDaysRequested) {
+            throw new IllegalStateException("Leave balance insufficient");
+        }
+        Integer consumedLeave = leaveBalance.getConsumedLeave() + noOfDaysRequested;
+        Integer remainingLeave = leaveBalance.getRemainingLeave() - noOfDaysRequested;
+        leaveBalance.setConsumedLeave(consumedLeave);
+        leaveBalance.setRemainingLeave(remainingLeave);
+        leaveBalance.setUpdatedAt(LocalDateTime.now());
+        leaveBalanceRepo.save(leaveBalance);
         leaveRequest.setLeaveType(leaveType);
 
         leaveRequest.setStartDate(
-                leaveRequestDto.getStartDate()
+                createLeaveRequestDto.getStartDate()
         );
 
         leaveRequest.setEndDate(
-                leaveRequestDto.getEndDate()
+                createLeaveRequestDto.getEndDate()
         );
 
         leaveRequest.setReason(
-                leaveRequestDto.getReason()
+                createLeaveRequestDto.getReason()
         );
 
         leaveRequest.setStatus(
@@ -257,7 +283,8 @@ public class LeaveRequestServiceImpl
      */
     @PreAuthorize("hasRole('EMPLOYEE')")
     @Override
-    public LeaveResponseDTO requestLeaveCancel(
+    @Transactional
+    public CreateLeaveRequestResponseDTO requestLeaveCancel(
             Long id
     ) {
 
@@ -271,7 +298,7 @@ public class LeaveRequestServiceImpl
 
         validateAction(
                 leaveRequest,
-                LeaveActionEnum.REQUEST_CANCEL
+                LeaveRequestActionEnum.REQUEST_CANCEL
         );
 
         leaveRequest.setStatus(
@@ -293,7 +320,8 @@ public class LeaveRequestServiceImpl
      */
     @PreAuthorize("hasRole('ADMIN')")
     @Override
-    public LeaveResponseDTO approveLeaveRequest(
+    @Transactional
+    public CreateLeaveRequestResponseDTO approveLeaveRequest(
             Long id
     ) {
 
@@ -307,7 +335,7 @@ public class LeaveRequestServiceImpl
 
         validateAction(
                 leaveRequest,
-                LeaveActionEnum.APPROVE_REQUEST
+                LeaveRequestActionEnum.APPROVE_REQUEST
         );
 
         leaveRequest.setStatus(
@@ -329,7 +357,8 @@ public class LeaveRequestServiceImpl
      */
     @PreAuthorize("hasRole('ADMIN')")
     @Override
-    public LeaveResponseDTO rejectLeaveRequest(
+    @Transactional
+    public CreateLeaveRequestResponseDTO rejectLeaveRequest(
             Long id
     ) {
 
@@ -343,7 +372,7 @@ public class LeaveRequestServiceImpl
 
         validateAction(
                 leaveRequest,
-                LeaveActionEnum.REJECT_REQUEST
+                LeaveRequestActionEnum.REJECT_REQUEST
         );
 
         leaveRequest.setStatus(
@@ -365,7 +394,8 @@ public class LeaveRequestServiceImpl
      */
     @PreAuthorize("hasRole('ADMIN')")
     @Override
-    public LeaveResponseDTO approveCancelRequest(
+    @Transactional
+    public CreateLeaveRequestResponseDTO approveCancelRequest(
             Long id
     ) {
 
@@ -379,7 +409,7 @@ public class LeaveRequestServiceImpl
 
         validateAction(
                 leaveRequest,
-                LeaveActionEnum.APPROVE_CANCEL
+                LeaveRequestActionEnum.APPROVE_CANCEL
         );
 
         leaveRequest.setStatus(
@@ -401,7 +431,8 @@ public class LeaveRequestServiceImpl
      */
     @PreAuthorize("hasRole('ADMIN')")
     @Override
-    public LeaveResponseDTO rejectCancelRequest(
+    @Transactional
+    public CreateLeaveRequestResponseDTO rejectCancelRequest(
             Long id
     ) {
 
@@ -415,7 +446,7 @@ public class LeaveRequestServiceImpl
 
         validateAction(
                 leaveRequest,
-                LeaveActionEnum.REJECT_CANCEL
+                LeaveRequestActionEnum.REJECT_CANCEL
         );
 
         leaveRequest.setStatus(
@@ -436,6 +467,7 @@ public class LeaveRequestServiceImpl
      */
     @PreAuthorize("hasRole('EMPLOYEE')")
     @Override
+    @Transactional
     public void deleteLeaveDraft(Long id) {
 
         LeaveRequestEntity leaveRequest =
@@ -448,7 +480,7 @@ public class LeaveRequestServiceImpl
 
         validateAction(
                 leaveRequest,
-                LeaveActionEnum.DELETE_DRAFT
+                LeaveRequestActionEnum.DELETE_DRAFT
         );
 
         leaveRequestRepo.delete(leaveRequest);
@@ -461,7 +493,7 @@ public class LeaveRequestServiceImpl
      * @return employee leave request projections
      */
     @Override
-    public List<LeaveResponseDTO>
+    public List<CreateLeaveRequestResponseDTO>
     getEmployeeLeaveRequests() {
 
         UserEntity user =
@@ -482,7 +514,7 @@ public class LeaveRequestServiceImpl
      * @return employee draft projections
      */
     @Override
-    public List<LeaveResponseDTO>
+    public List<CreateLeaveRequestResponseDTO>
     getEmployeeLeaveDrafts() {
 
         UserEntity user =
@@ -510,7 +542,7 @@ public class LeaveRequestServiceImpl
      * @return allowed workflow actions
      */
     @Override
-    public List<LeaveActionEnum>
+    public List<LeaveRequestActionEnum>
     allowedLeaveActions(
             LeaveRequestEntity leaveRequest
     ) {
@@ -529,67 +561,67 @@ public class LeaveRequestServiceImpl
                         leaveRequest.getUser().getId()
                 );
 
-        List<LeaveActionEnum> actions =
+        List<LeaveRequestActionEnum> actions =
                 new ArrayList<>();
 
 
-        if(userRole == RoleEnum.EMPLOYEE) {
+        if (userRole == RoleEnum.EMPLOYEE) {
 
-            if(isOwner &&
+            if (isOwner &&
                     status ==
                             LeaveRequestStatusEnum.DRAFT) {
 
                 actions.add(
-                        LeaveActionEnum.DELETE_DRAFT
+                        LeaveRequestActionEnum.DELETE_DRAFT
                 );
 
                 actions.add(
-                        LeaveActionEnum.SAVE_DRAFT
+                        LeaveRequestActionEnum.SAVE_DRAFT
                 );
 
                 actions.add(
-                        LeaveActionEnum.SUBMIT
+                        LeaveRequestActionEnum.SUBMIT
                 );
             }
-            if(isOwner &&
+            if (isOwner &&
                     status ==
                             LeaveRequestStatusEnum.PENDING) {
-                actions.add(LeaveActionEnum.CANCEL);
+                actions.add(LeaveRequestActionEnum.CANCEL);
             }
-            if(isOwner &&
+            if (isOwner &&
                     status ==
                             LeaveRequestStatusEnum.APPROVED) {
 
                 actions.add(
-                        LeaveActionEnum.REQUEST_CANCEL
+                        LeaveRequestActionEnum.REQUEST_CANCEL
                 );
             }
         }
 
 
-        if(userRole == RoleEnum.MANAGER) {
+        if (userRole == RoleEnum.MANAGER) {
 
-            if(status ==
+            if (status ==
                     LeaveRequestStatusEnum.PENDING) {
 
                 actions.add(
-                        LeaveActionEnum.APPROVE_REQUEST
+                        LeaveRequestActionEnum.APPROVE_REQUEST
                 );
 
                 actions.add(
-                        LeaveActionEnum.REJECT_REQUEST
+                        LeaveRequestActionEnum.REJECT_REQUEST
                 );
             }
 
-            if(status ==
+            if (status ==
                     LeaveRequestStatusEnum.CANCEL_REQUESTED) {
 
                 actions.add(
-                        LeaveActionEnum.APPROVE_CANCEL
+                        LeaveRequestActionEnum.APPROVE_CANCEL
                 );
 
                 actions.add(
-                        LeaveActionEnum.REJECT_CANCEL
+                        LeaveRequestActionEnum.REJECT_CANCEL
                 );
             }
         }
@@ -603,17 +635,17 @@ public class LeaveRequestServiceImpl
      * is currently permitted.
      *
      * @param leaveRequest target leave request
-     * @param action requested workflow action
+     * @param action       requested workflow action
      */
     private void validateAction(
             LeaveRequestEntity leaveRequest,
-            LeaveActionEnum action
+            LeaveRequestActionEnum action
     ) {
 
-        List<LeaveActionEnum> actions =
+        List<LeaveRequestActionEnum> actions =
                 allowedLeaveActions(leaveRequest);
 
-        if(!actions.contains(action)) {
+        if (!actions.contains(action)) {
 
             throw new IllegalStateException(
                     "Unauthorized leave action"
@@ -629,11 +661,11 @@ public class LeaveRequestServiceImpl
      * @param leaveRequest target leave request
      * @return actionable leave projection
      */
-    private LeaveResponseDTO mapWithActions(
+    private CreateLeaveRequestResponseDTO mapWithActions(
             LeaveRequestEntity leaveRequest
     ) {
 
-        LeaveResponseDTO response =
+        CreateLeaveRequestResponseDTO response =
                 leaveRequestMapper
                         .mapToResponse(leaveRequest);
 
@@ -666,31 +698,31 @@ public class LeaveRequestServiceImpl
      * Validates mandatory leave
      * submission payload fields.
      *
-     * @param leaveRequestDto incoming leave payload
+     * @param createLeaveRequestDto incoming leave payload
      */
     private void validateSubmissionPayload(
-            LeaveRequestDTO leaveRequestDto
+            CreateLeaveRequestDTO createLeaveRequestDto
     ) {
 
-        if (leaveRequestDto.getLeaveType() == null
-                || leaveRequestDto.getLeaveType().isBlank()) {
+        if (createLeaveRequestDto.getLeaveType() == null
+                || createLeaveRequestDto.getLeaveType().isBlank()) {
 
             throw new RuntimeException(
                     "Leave type should be specified"
             );
         }
 
-        if (leaveRequestDto.getStartDate() == null
-                || leaveRequestDto.getEndDate() == null) {
+        if (createLeaveRequestDto.getStartDate() == null
+                || createLeaveRequestDto.getEndDate() == null) {
 
             throw new RuntimeException(
                     "Missing required date fields"
             );
         }
 
-        if (leaveRequestDto.getEndDate()
+        if (createLeaveRequestDto.getEndDate()
                 .isBefore(
-                        leaveRequestDto.getStartDate()
+                        createLeaveRequestDto.getStartDate()
                 )) {
 
             throw new RuntimeException(
@@ -698,4 +730,19 @@ public class LeaveRequestServiceImpl
             );
         }
     }
+
+    /**
+     * @param createLeaveRequestDTO incoming leave payload
+     * @return no of leave days  requested
+     */
+    public Integer calculateLeaveDays(
+            CreateLeaveRequestDTO createLeaveRequestDTO
+    ) {
+        return (int)
+                ChronoUnit.DAYS.between(
+                        createLeaveRequestDTO.getStartDate(),
+                        createLeaveRequestDTO.getEndDate()
+                ) + 1;
+    }
+
 }

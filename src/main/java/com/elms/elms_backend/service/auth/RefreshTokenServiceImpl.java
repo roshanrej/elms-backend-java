@@ -8,6 +8,7 @@ import com.elms.elms_backend.security.JwtService;
 import com.elms.elms_backend.security.UserPrincipal;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -26,6 +27,7 @@ public class RefreshTokenServiceImpl
         this.jwtService = jwtService;
     }
 
+    @Transactional
     @Override
     public RefreshTokenEntity createRefreshToken(
             UserEntity user
@@ -77,7 +79,7 @@ public class RefreshTokenServiceImpl
 
         return refreshToken;
     }
-
+    @Transactional
     @Override
     public void revokeRefreshToken(String refreshToken) {
 

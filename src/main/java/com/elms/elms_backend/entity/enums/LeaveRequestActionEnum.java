@@ -2,7 +2,7 @@ package com.elms.elms_backend.entity.enums;
 
 
 
-public enum LeaveActionEnum {
+public enum LeaveRequestActionEnum {
         CANCEL,
         DELETE_DRAFT,
         SAVE_DRAFT,

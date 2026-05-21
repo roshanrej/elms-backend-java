@@ -1,7 +1,7 @@
 package com.elms.elms_backend.controller.leave;
 
-import com.elms.elms_backend.dto.leave.LeaveRequestDTO;
-import com.elms.elms_backend.dto.leave.LeaveResponseDTO;
+import com.elms.elms_backend.dto.leave.CreateLeaveRequestDTO;
+import com.elms.elms_backend.dto.leave.CreateLeaveRequestResponseDTO;
 import com.elms.elms_backend.service.leave.LeaveRequestService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,49 +19,49 @@ public class LeaveRequestController {
     }
 
     @GetMapping("/me")
-    public List<LeaveResponseDTO> getEmployeeLeaveRequests(){
+    public List<CreateLeaveRequestResponseDTO> getEmployeeLeaveRequests(){
         return service.getEmployeeLeaveRequests();
     }
     @GetMapping("/me/drafts")
-    public List<LeaveResponseDTO> getEmployeeLeaveDrafts(){
+    public List<CreateLeaveRequestResponseDTO> getEmployeeLeaveDrafts(){
         return service.getEmployeeLeaveDrafts();
     }
     @PostMapping("/draft")
-    public LeaveResponseDTO createLeaveDraft(@RequestBody LeaveRequestDTO leaveRequestDto) {
-        return service.createLeaveDraft(leaveRequestDto);
+    public CreateLeaveRequestResponseDTO createLeaveDraft(@RequestBody CreateLeaveRequestDTO createLeaveRequestDto) {
+        return service.createLeaveDraft(createLeaveRequestDto);
     }
 
     @PostMapping("/submit")
-    public LeaveResponseDTO submitNewLeaveRequest(@RequestBody LeaveRequestDTO leaveRequestDto) {
-        return service.submitNewLeaveRequest(leaveRequestDto);
+    public CreateLeaveRequestResponseDTO submitNewLeaveRequest(@RequestBody CreateLeaveRequestDTO createLeaveRequestDto) {
+        return service.submitNewLeaveRequest(createLeaveRequestDto);
     }
 
 
     @PostMapping("/{id}/submit")
-    public ResponseEntity<LeaveResponseDTO>
+    public ResponseEntity<CreateLeaveRequestResponseDTO>
     submitLeaveRequest(
             @PathVariable Long id,
             @RequestBody
-            LeaveRequestDTO leaveRequestDto
+            CreateLeaveRequestDTO createLeaveRequestDto
     ) {
 
-        LeaveResponseDTO response =
+        CreateLeaveRequestResponseDTO response =
                 service
                         .submitLeaveRequest(
                                 id,
-                                leaveRequestDto
+                                createLeaveRequestDto
                         );
 
         return ResponseEntity.ok(response);
     }
     @PostMapping("/{id}/request-cancel")
-    public ResponseEntity<LeaveResponseDTO>
+    public ResponseEntity<CreateLeaveRequestResponseDTO>
     requestLeaveCancel(
             @PathVariable Long id
 
     ) {
 
-        LeaveResponseDTO response =
+        CreateLeaveRequestResponseDTO response =
                 service
                         .requestLeaveCancel(
                                 id
@@ -70,13 +70,13 @@ public class LeaveRequestController {
         return ResponseEntity.ok(response);
     }
     @PostMapping("/{id}/approve-cancel")
-    public ResponseEntity<LeaveResponseDTO>
+    public ResponseEntity<CreateLeaveRequestResponseDTO>
     cancelLeaveRequest(
             @PathVariable Long id
 
     ) {
 
-        LeaveResponseDTO response =
+        CreateLeaveRequestResponseDTO response =
                 service
                         .approveCancelRequest(
                                 id
@@ -85,13 +85,13 @@ public class LeaveRequestController {
         return ResponseEntity.ok(response);
     }
     @PostMapping("/{id}/reject-cancel")
-    public ResponseEntity<LeaveResponseDTO>
+    public ResponseEntity<CreateLeaveRequestResponseDTO>
     rejectLeaveCancel(
             @PathVariable Long id
 
     ) {
 
-        LeaveResponseDTO response =
+        CreateLeaveRequestResponseDTO response =
                 service
                         .rejectLeaveRequest(
                                 id

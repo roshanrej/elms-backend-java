@@ -1,5 +1,7 @@
 package com.elms.elms_backend.controller.leave;
 
+import com.elms.elms_backend.dto.leavepolicy.CreateLeavePolicyDTO;
+import com.elms.elms_backend.dto.leavepolicy.CreateLeavePolicyResponseDTO;
 import com.elms.elms_backend.dto.leavepolicy.LeavePolicyProjectionDTO;
 import com.elms.elms_backend.entity.enums.LeaveTypeStatusEnum;
 import com.elms.elms_backend.service.leavepolicy.LeavePolicyService;
@@ -24,6 +26,10 @@ public class LeavePolicyController {
     @GetMapping("/{year}")
     public List<LeavePolicyProjectionDTO> getLeavePolicies(@PathVariable Integer year){
         return leavePolicyService.getLeavePolicies(year);
+    }
+    @PostMapping("/create")
+    public CreateLeavePolicyResponseDTO createLeavePolicy(@RequestBody CreateLeavePolicyDTO createLeavePolicyDTO){
+     return leavePolicyService.createLeavePolicy(createLeavePolicyDTO);
     }
 
 

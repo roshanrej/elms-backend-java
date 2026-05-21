@@ -3,7 +3,7 @@ package com.elms.elms_backend.service.auth;
 import com.elms.elms_backend.dto.auth.LoginRequestDTO;
 import com.elms.elms_backend.dto.auth.LoginResponseDTO;
 import com.elms.elms_backend.dto.auth.LogoutRequestDTO;
-import com.elms.elms_backend.entity.Department;
+import com.elms.elms_backend.entity.DepartmentEntity;
 import com.elms.elms_backend.entity.RefreshTokenEntity;
 import com.elms.elms_backend.entity.RoleEntity;
 import com.elms.elms_backend.entity.UserEntity;
@@ -18,6 +18,7 @@ import com.elms.elms_backend.service.user.UserService;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -62,7 +63,7 @@ public class AuthServiceImpl
     @Override
     public LoginResponseDTO validateSession() {
         UserEntity user = userService.getAuthenticatedUser();
-        String department = user.getDepartment().getName();
+        String department = user.getDepartmentEntity().getName();
 
         return new LoginResponseDTO(
                 user.getName(),
@@ -79,6 +80,7 @@ public class AuthServiceImpl
      * @param loginRequestDto login request payload
      * @return authenticated login response
      */
+    @Transactional
     @Override
     public LoginResponseDTO loginUser(
             LoginRequestDTO loginRequestDto
@@ -102,8 +104,8 @@ public class AuthServiceImpl
             );
         }
 
-        String department = user.getDepartment() != null
-                ? user.getDepartment().getName()
+        String department = user.getDepartmentEntity() != null
+                ? user.getDepartmentEntity().getName()
                 : null;
 
         String accessToken =
@@ -161,7 +163,7 @@ public class AuthServiceImpl
         String hashedPassword =
                 passwordEncoder.encode(password);
 
-        Department department =
+        DepartmentEntity departmentEntity =
                 deptRepo.findByName(deptName)
                         .orElseThrow(() ->
                                 new RuntimeException(
@@ -190,7 +192,7 @@ public class AuthServiceImpl
                 .email(email)
                 .passwordHash(hashedPassword)
                 .role(role)
-                .department(department)
+                .departmentEntity(departmentEntity)
                 .status(UserStatusEnum.ACTIVE)
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -199,6 +201,7 @@ public class AuthServiceImpl
     }
 
     @Override
+    @Transactional
     public void logoutUser(LogoutRequestDTO refreshTokenDTO) {
           refreshTokenService.revokeRefreshToken(refreshTokenDTO.getRefreshToken());
     }

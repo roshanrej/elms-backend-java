@@ -1,9 +1,9 @@
 package com.elms.elms_backend.service.leave;
 
-import com.elms.elms_backend.dto.leave.LeaveRequestDTO;
-import com.elms.elms_backend.dto.leave.LeaveResponseDTO;
+import com.elms.elms_backend.dto.leave.CreateLeaveRequestDTO;
+import com.elms.elms_backend.dto.leave.CreateLeaveRequestResponseDTO;
 import com.elms.elms_backend.entity.LeaveRequestEntity;
-import com.elms.elms_backend.entity.enums.LeaveActionEnum;
+import com.elms.elms_backend.entity.enums.LeaveRequestActionEnum;
 
 import java.util.List;
 
@@ -14,7 +14,7 @@ public interface LeaveRequestService {
      * @param leaveTypeId id for leaveType
      * @return persisted number of leave days for type
      */
-      Integer getTotalConsumedLeaves(Long leaveTypeId, Integer Year);
+
 
 
     /**
@@ -23,8 +23,8 @@ public interface LeaveRequestService {
      * @param requestDTO incoming leave submission payload
      * @return persisted submitted leave projection
      */
-    LeaveResponseDTO submitNewLeaveRequest(
-            LeaveRequestDTO requestDTO
+    CreateLeaveRequestResponseDTO submitNewLeaveRequest(
+            CreateLeaveRequestDTO requestDTO
     );
 
 
@@ -34,8 +34,8 @@ public interface LeaveRequestService {
      * @param requestDTO incoming leave draft payload
      * @return persisted leave draft projection
      */
-    LeaveResponseDTO createLeaveDraft(
-            LeaveRequestDTO requestDTO
+    CreateLeaveRequestResponseDTO createLeaveDraft(
+            CreateLeaveRequestDTO requestDTO
     );
 
 
@@ -43,12 +43,12 @@ public interface LeaveRequestService {
      * Submits existing leave draft.
      *
      * @param id leave request identifier
-     * @param leaveRequestDTO updated leave submission payload
+     * @param createLeaveRequestDTO updated leave submission payload
      * @return submitted leave projection
      */
-    LeaveResponseDTO submitLeaveRequest(
+    CreateLeaveRequestResponseDTO submitLeaveRequest(
             Long id,
-            LeaveRequestDTO leaveRequestDTO
+            CreateLeaveRequestDTO createLeaveRequestDTO
     );
 
 
@@ -58,7 +58,7 @@ public interface LeaveRequestService {
      * @param id leave request identifier
      * @return updated leave projection
      */
-    LeaveResponseDTO requestLeaveCancel(
+    CreateLeaveRequestResponseDTO requestLeaveCancel(
             Long id
     );
 
@@ -69,7 +69,7 @@ public interface LeaveRequestService {
      * @param id leave request identifier
      * @return approved leave projection
      */
-    LeaveResponseDTO approveLeaveRequest(
+    CreateLeaveRequestResponseDTO approveLeaveRequest(
             Long id
     );
 
@@ -80,7 +80,7 @@ public interface LeaveRequestService {
      * @param id leave request identifier
      * @return rejected leave projection
      */
-    LeaveResponseDTO rejectLeaveRequest(
+    CreateLeaveRequestResponseDTO rejectLeaveRequest(
             Long id
     );
 
@@ -91,7 +91,7 @@ public interface LeaveRequestService {
      * @param id leave request identifier
      * @return cancelled leave projection
      */
-    LeaveResponseDTO approveCancelRequest(
+    CreateLeaveRequestResponseDTO approveCancelRequest(
             Long id
     );
 
@@ -102,7 +102,7 @@ public interface LeaveRequestService {
      * @param id leave request identifier
      * @return restored approved leave projection
      */
-    LeaveResponseDTO rejectCancelRequest(
+    CreateLeaveRequestResponseDTO rejectCancelRequest(
             Long id
     );
 
@@ -122,7 +122,7 @@ public interface LeaveRequestService {
      *
      * @return employee leave request projections
      */
-    List<LeaveResponseDTO>
+    List<CreateLeaveRequestResponseDTO>
     getEmployeeLeaveRequests();
 
 
@@ -131,7 +131,7 @@ public interface LeaveRequestService {
      *
      * @return employee draft projections
      */
-    List<LeaveResponseDTO>
+    List<CreateLeaveRequestResponseDTO>
     getEmployeeLeaveDrafts();
 
 
@@ -142,7 +142,7 @@ public interface LeaveRequestService {
      * @param leaveRequest target leave request
      * @return allowed workflow actions
      */
-    List<LeaveActionEnum>
+    List<LeaveRequestActionEnum>
     allowedLeaveActions(
             LeaveRequestEntity leaveRequest
     );

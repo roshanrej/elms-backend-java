@@ -1,6 +1,6 @@
 package com.elms.elms_backend.entity;
 
-import com.elms.elms_backend.entity.enums.LeaveActionEnum;
+import com.elms.elms_backend.entity.enums.LeaveRequestActionEnum;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -27,7 +27,7 @@ public class LeaveAuditLogEntity {
 
     @Column(name = "action", nullable = false)
     @Enumerated(EnumType.STRING)
-    private LeaveActionEnum action;
+    private LeaveRequestActionEnum action;
 
     @ManyToOne(optional = false)
     @JoinColumn(name="actor_id", nullable = false)

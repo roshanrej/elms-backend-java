@@ -36,7 +36,7 @@ public class UserEntity {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "department_id", nullable = false)
-    private Department department;
+    private DepartmentEntity departmentEntity;
 
     @Column(name="status")
     @Enumerated(EnumType.STRING)
