@@ -58,7 +58,6 @@ public class ResponseHandler {
                         false,
                         null,
                         message
-
                 );
 
         return new ResponseEntity<>(

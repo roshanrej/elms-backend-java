@@ -22,8 +22,8 @@ public class LeaveRequestEntity {
 
     // 🔹 MUST exist
     @ManyToOne(optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private UserEntity user;
+    @JoinColumn(name = "employee_id", nullable = false)
+    private UserEntity employee;
 
 
     @ManyToOne(optional = true)
@@ -31,9 +31,6 @@ public class LeaveRequestEntity {
     private LeaveTypeEntity leaveType;
 
     // OPTIONAL
-    @ManyToOne
-    @JoinColumn(name = "approver_id")
-    private UserEntity approver;
 
     @Column(name = "start_date")
     private LocalDate startDate;
@@ -52,8 +49,6 @@ public class LeaveRequestEntity {
 
     @Column(name = "submitted_at")
     private LocalDateTime submittedAt;
-    @Column(name = "decision_at")
-    private LocalDateTime decisionAt;
 
     @Column(name="year")
     private Integer year;

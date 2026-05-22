@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -22,12 +23,18 @@ public class UserEntity {
     @Column(name="name")
     private String name;
 
-    @Column(unique = true, nullable = false)
+    @Column(name="email",unique = true, nullable = false)
     private String email;
 
     @Column(name = "password_hash")
     private String passwordHash;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_id")
+    private UserEntity manager;
+
+    @OneToMany(mappedBy = "manager")
+    private List<UserEntity> subordinates;
     // 🔹 RELATIONSHIPS
 
     @ManyToOne(optional = false)

@@ -13,7 +13,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateLeaveRequestResponseDTO {
+public class LeaveRequestProjectionDTO {
 
     private Long id;
 
@@ -31,9 +31,6 @@ public class CreateLeaveRequestResponseDTO {
 
     private LocalDateTime submittedAt;
 
-    private String approverName;
-
-    private LocalDateTime decisionAt;
     private List<LeaveRequestActionEnum> allowedActions;
 
 }

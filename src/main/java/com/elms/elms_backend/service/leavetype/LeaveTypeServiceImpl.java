@@ -1,6 +1,5 @@
 package com.elms.elms_backend.service.leavetype;
 
-import com.elms.elms_backend.dto.leavetype.LeaveTypeResponseDTO;
 import com.elms.elms_backend.entity.LeaveTypeEntity;
 import com.elms.elms_backend.entity.enums.LeaveTypeStatusEnum;
 import com.elms.elms_backend.repository.leave.LeaveTypeRepository;

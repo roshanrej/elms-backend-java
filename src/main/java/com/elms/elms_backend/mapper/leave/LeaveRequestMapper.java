@@ -1,6 +1,7 @@
 package com.elms.elms_backend.mapper.leave;
 
-import com.elms.elms_backend.dto.leave.CreateLeaveRequestResponseDTO;
+import com.elms.elms_backend.dto.leave.LeaveRequestProjectionDTO;
+import com.elms.elms_backend.dto.leave.ManagerEmployeeLeaveDTO;
 import com.elms.elms_backend.entity.LeaveRequestEntity;
 import com.elms.elms_backend.entity.enums.LeaveRequestActionEnum;
 import org.springframework.stereotype.Component;
@@ -16,7 +17,7 @@ public class LeaveRequestMapper {
      * @param leaveRequest leave request entity
      * @return mapped response DTO
      */
-    public CreateLeaveRequestResponseDTO mapToResponse(
+    public LeaveRequestProjectionDTO mapToEmployeeLeaveResponse(
             LeaveRequestEntity leaveRequest
     ) {
 
@@ -26,13 +27,8 @@ public class LeaveRequestMapper {
                         : null;
 
 
-
-        String approverName =
-                leaveRequest.getApprover() != null
-                        ? leaveRequest.getApprover().getName()
-                        : null;
         List<LeaveRequestActionEnum> allowedActions = new ArrayList<LeaveRequestActionEnum>();
-        return new CreateLeaveRequestResponseDTO(
+        return new LeaveRequestProjectionDTO(
                 leaveRequest.getId(),
 
                 leaveTypeName,
@@ -49,13 +45,12 @@ public class LeaveRequestMapper {
 
                 leaveRequest.getSubmittedAt(),
 
-                approverName,
-
-                leaveRequest.getDecisionAt(),
-
                 allowedActions
 
 
         );
     }
+
+
+
 }

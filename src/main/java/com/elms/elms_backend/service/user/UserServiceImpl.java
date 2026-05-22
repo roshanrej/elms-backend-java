@@ -1,19 +1,27 @@
 package com.elms.elms_backend.service.user;
 
+import com.elms.elms_backend.entity.RoleEntity;
 import com.elms.elms_backend.entity.UserEntity;
+import com.elms.elms_backend.entity.enums.RoleEnum;
+import com.elms.elms_backend.repository.user.RoleRepository;
 import com.elms.elms_backend.repository.user.UserRepository;
 import com.elms.elms_backend.security.UserPrincipal;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 
 @Service
 public class UserServiceImpl implements  UserService{
 
-    final UserRepository userRepo;
-    public UserServiceImpl( UserRepository userRepo){
+    private final UserRepository userRepo;
+    private final RoleRepository roleRepo;
+
+    public UserServiceImpl(UserRepository userRepo, RoleRepository roleRepo){
         this.userRepo = userRepo;
+        this.roleRepo = roleRepo;
     }
 
     /**
@@ -42,7 +50,15 @@ public class UserServiceImpl implements  UserService{
                 );
     }
 
-
+    /**
+     * @param role
+     * @return
+     */
+    @Override
+    public List<UserEntity> findByRole(RoleEnum roleName) {
+        RoleEntity role = roleRepo.findByName(roleName).orElseThrow(()->new IllegalArgumentException("Invalid role"));
+        return  userRepo.findByRole(role);
+    }
 
 
 }

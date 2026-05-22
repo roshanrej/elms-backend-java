@@ -1,19 +1,21 @@
 package com.elms.elms_backend.service.leave;
 
 import com.elms.elms_backend.dto.leave.CreateLeaveRequestDTO;
-import com.elms.elms_backend.dto.leave.CreateLeaveRequestResponseDTO;
+import com.elms.elms_backend.dto.leave.LeaveRequestProjectionDTO;
+import com.elms.elms_backend.dto.leave.ManagerEmployeeLeaveDTO;
 import com.elms.elms_backend.entity.LeaveRequestEntity;
 import com.elms.elms_backend.entity.enums.LeaveRequestActionEnum;
 
 import java.util.List;
 
 public interface LeaveRequestService {
+
     /**
-     * Gets total consumed leaves for leave type
-     *
-     * @param leaveTypeId id for leaveType
-     * @return persisted number of leave days for type
+     * Gets leave requests for logged in Employee
+     * @return persisted leave Requests for authenticated employee
      */
+    List<ManagerEmployeeLeaveDTO> getLeaveRequests();
+
 
 
 
@@ -23,7 +25,7 @@ public interface LeaveRequestService {
      * @param requestDTO incoming leave submission payload
      * @return persisted submitted leave projection
      */
-    CreateLeaveRequestResponseDTO submitNewLeaveRequest(
+    LeaveRequestProjectionDTO submitNewLeaveRequest(
             CreateLeaveRequestDTO requestDTO
     );
 
@@ -34,7 +36,7 @@ public interface LeaveRequestService {
      * @param requestDTO incoming leave draft payload
      * @return persisted leave draft projection
      */
-    CreateLeaveRequestResponseDTO createLeaveDraft(
+    LeaveRequestProjectionDTO createLeaveDraft(
             CreateLeaveRequestDTO requestDTO
     );
 
@@ -46,7 +48,7 @@ public interface LeaveRequestService {
      * @param createLeaveRequestDTO updated leave submission payload
      * @return submitted leave projection
      */
-    CreateLeaveRequestResponseDTO submitLeaveRequest(
+    LeaveRequestProjectionDTO submitLeaveRequest(
             Long id,
             CreateLeaveRequestDTO createLeaveRequestDTO
     );
@@ -58,7 +60,7 @@ public interface LeaveRequestService {
      * @param id leave request identifier
      * @return updated leave projection
      */
-    CreateLeaveRequestResponseDTO requestLeaveCancel(
+    LeaveRequestProjectionDTO requestLeaveCancel(
             Long id
     );
 
@@ -69,7 +71,7 @@ public interface LeaveRequestService {
      * @param id leave request identifier
      * @return approved leave projection
      */
-    CreateLeaveRequestResponseDTO approveLeaveRequest(
+    LeaveRequestProjectionDTO approveLeaveRequest(
             Long id
     );
 
@@ -80,7 +82,7 @@ public interface LeaveRequestService {
      * @param id leave request identifier
      * @return rejected leave projection
      */
-    CreateLeaveRequestResponseDTO rejectLeaveRequest(
+    LeaveRequestProjectionDTO rejectLeaveRequest(
             Long id
     );
 
@@ -91,7 +93,7 @@ public interface LeaveRequestService {
      * @param id leave request identifier
      * @return cancelled leave projection
      */
-    CreateLeaveRequestResponseDTO approveCancelRequest(
+    LeaveRequestProjectionDTO approveCancelRequest(
             Long id
     );
 
@@ -102,7 +104,7 @@ public interface LeaveRequestService {
      * @param id leave request identifier
      * @return restored approved leave projection
      */
-    CreateLeaveRequestResponseDTO rejectCancelRequest(
+    LeaveRequestProjectionDTO rejectCancelRequest(
             Long id
     );
 
@@ -122,7 +124,7 @@ public interface LeaveRequestService {
      *
      * @return employee leave request projections
      */
-    List<CreateLeaveRequestResponseDTO>
+    List<LeaveRequestProjectionDTO>
     getEmployeeLeaveRequests();
 
 
@@ -131,7 +133,7 @@ public interface LeaveRequestService {
      *
      * @return employee draft projections
      */
-    List<CreateLeaveRequestResponseDTO>
+    List<LeaveRequestProjectionDTO>
     getEmployeeLeaveDrafts();
 
 
