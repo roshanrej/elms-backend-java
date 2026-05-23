@@ -23,8 +23,6 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    @Value("${jwt.secret}")
-    private String secret;
 
     /**
      * Generates HMAC signing key from
@@ -32,11 +30,11 @@ public class JwtService {
      *
      * @return JWT signing key
      */
-    private SecretKey getSigningKey() {
+    private final SecretKey secretKey =
+            Jwts.SIG.HS256.key().build();
 
-        return Keys.hmacShaKeyFor(
-                secret.getBytes()
-        );
+    private SecretKey getSigningKey() {
+        return secretKey;
     }
 
     /**

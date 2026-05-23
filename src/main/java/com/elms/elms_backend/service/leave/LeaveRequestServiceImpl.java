@@ -607,4 +607,5 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         return (int) ChronoUnit.DAYS.between(createLeaveRequestDTO.getStartDate(), createLeaveRequestDTO.getEndDate()) + 1;
     }
 
+
 }
