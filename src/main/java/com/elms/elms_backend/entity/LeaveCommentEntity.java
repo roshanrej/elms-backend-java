@@ -20,16 +20,16 @@ public class LeaveCommentEntity {
     private Long id;
 
    @ManyToOne
-    @JoinColumn(name="leave_id")
+    @JoinColumn(name="leave_id",  nullable = false)
     private LeaveRequestEntity leaveRequest;
 
    @ManyToOne
-    @JoinColumn(name="user_id")
+    @JoinColumn(name="user_id", nullable = false)
     private UserEntity user;
 
    @Column(name="message", nullable = false)
     private String message;
 
-   @Column(name="created_at")
+   @Column(name="created_at", nullable = false)
     private LocalDateTime createdAt;
 }

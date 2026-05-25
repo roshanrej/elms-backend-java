@@ -114,7 +114,7 @@ public class AuthController {
           AccessTokenResponseDTO accessTokenResponseDTO =
                 new AccessTokenResponseDTO(jwtService.generateAccessToken(
                         new UserPrincipal(user)
-                ));
+                ), user.getEmail(),user.getRole().getName(), user.getName());
 
         return ResponseHandler.success(
                 accessTokenResponseDTO,

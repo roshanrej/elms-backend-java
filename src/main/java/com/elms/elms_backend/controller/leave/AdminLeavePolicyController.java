@@ -3,19 +3,18 @@ package com.elms.elms_backend.controller.leave;
 import com.elms.elms_backend.dto.leavepolicy.CreateLeavePolicyDTO;
 import com.elms.elms_backend.dto.leavepolicy.CreateLeavePolicyResponseDTO;
 import com.elms.elms_backend.dto.leavepolicy.LeavePolicyProjectionDTO;
-import com.elms.elms_backend.entity.enums.LeaveTypeStatusEnum;
 import com.elms.elms_backend.service.leavepolicy.LeavePolicyService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/leave-policies")
-public class LeavePolicyController {
+@RequestMapping("admin/api/leave-policies")
+public class AdminLeavePolicyController {
 
     private final LeavePolicyService leavePolicyService;
 
-    public LeavePolicyController(LeavePolicyService leavePolicyService) {
+    public AdminLeavePolicyController(LeavePolicyService leavePolicyService) {
         this.leavePolicyService = leavePolicyService;
     }
 

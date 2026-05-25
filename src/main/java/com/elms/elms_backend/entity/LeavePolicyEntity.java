@@ -18,13 +18,13 @@ public class LeavePolicyEntity {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "leave_type_id")
+    @JoinColumn(name = "leave_type_id", nullable = false)
     private LeaveTypeEntity leaveType;
 
-    @Column(name="year")
+    @Column(name="year", nullable = false)
     private Integer year;
 
-    @Column(name="allocated_leave")
+    @Column(name="allocated_leave", nullable = false)
     private Integer allocatedLeave;
 
 

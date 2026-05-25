@@ -80,18 +80,17 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
         LeavePolicyEntity savedLeavePolicyEntity = leavePolicyRepo.save(leavePolicyEntity);
 
         List<UserEntity> employees = userService.findByRole(RoleEnum.EMPLOYEE);
-        employees.forEach(employee ->
+        List<LeaveBalanceEntity> balances = employees.stream()
+                .map(employee -> LeaveBalanceEntity.builder()
+                        .employee(employee)
+                        .leavePolicy(savedLeavePolicyEntity)
+                        .consumedLeave(0)
+                        .remainingLeave(allocatedLeave)
+                        .updatedAt(LocalDateTime.now())
+                        .build())
+                .toList();
 
-                leaveBalanceRepo.save(
-
-                        LeaveBalanceEntity.builder()
-                                .employee(employee)
-                                .leavePolicy(savedLeavePolicyEntity)
-                                .consumedLeave(0)
-                                .remainingLeave(allocatedLeave)
-                                .build()
-                )
-        );
+        leaveBalanceRepo.saveAll(balances);
        return leavePolicyMapper.mapToResponse(savedLeavePolicyEntity);
     }
 }

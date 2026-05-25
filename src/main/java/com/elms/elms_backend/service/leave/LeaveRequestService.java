@@ -10,6 +10,14 @@ import java.util.List;
 
 public interface LeaveRequestService {
 
+
+    /**
+     * Cancels pending leave request  for authenticated employee.
+     *
+     * @param id incoming leave id
+     * @return persisted leave request projection
+     */
+    LeaveRequestProjectionDTO cancelLeaveRequest(Long leaveRequestId);
     /**
      * Gets leave requests for logged in Employee
      * @return persisted leave Requests for authenticated employee
@@ -136,16 +144,4 @@ public interface LeaveRequestService {
     List<LeaveRequestProjectionDTO>
     getEmployeeLeaveDrafts();
 
-
-    /**
-     * Resolves allowed workflow actions
-     * for authenticated user.
-     *
-     * @param leaveRequest target leave request
-     * @return allowed workflow actions
-     */
-    List<LeaveRequestActionEnum>
-    allowedLeaveActions(
-            LeaveRequestEntity leaveRequest
-    );
 }

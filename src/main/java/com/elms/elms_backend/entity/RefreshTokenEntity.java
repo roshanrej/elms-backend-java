@@ -28,6 +28,4 @@ public class RefreshTokenEntity {
     @Column(nullable = false)
     private LocalDateTime expiryDate;
 
-    @Column(nullable = false)
-    private boolean revoked;
 }

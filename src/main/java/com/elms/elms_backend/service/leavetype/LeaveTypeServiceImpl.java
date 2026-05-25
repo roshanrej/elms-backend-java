@@ -1,9 +1,12 @@
 package com.elms.elms_backend.service.leavetype;
 
+import com.elms.elms_backend.dto.leavetype.CreateLeaveTypeDTO;
+import com.elms.elms_backend.dto.leavetype.CreateLeaveTypeResponseDTO;
 import com.elms.elms_backend.entity.LeaveTypeEntity;
 import com.elms.elms_backend.entity.enums.LeaveTypeStatusEnum;
 import com.elms.elms_backend.repository.leave.LeaveTypeRepository;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -79,7 +82,22 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
         return leaveType;
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
+    @Override
+    public CreateLeaveTypeResponseDTO createLeaveType(CreateLeaveTypeDTO createLeaveTypeDTO) {
+        if(createLeaveTypeDTO.getName() == null || createLeaveTypeDTO.getName().isBlank()){
+            throw new RuntimeException("Leave name cant be empty");
+        }
+        if(leaveTypeRepo.existsByName(createLeaveTypeDTO.getName())){
+            throw new RuntimeException("Leave type already exists");
+        }
+        LeaveTypeEntity leaveType = LeaveTypeEntity.builder()
+                        .status(LeaveTypeStatusEnum.ACTIVE)
+                        .name(createLeaveTypeDTO.getName())
+                .build();
+        LeaveTypeEntity savedLeaveType = leaveTypeRepo.save(leaveType);
+        return new CreateLeaveTypeResponseDTO(savedLeaveType.getId(),savedLeaveType.getName(),savedLeaveType.getStatus());
+    }
 
 
     /**

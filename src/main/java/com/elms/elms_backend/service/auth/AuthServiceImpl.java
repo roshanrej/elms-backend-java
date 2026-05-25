@@ -9,6 +9,7 @@ import com.elms.elms_backend.entity.RoleEntity;
 import com.elms.elms_backend.entity.UserEntity;
 import com.elms.elms_backend.entity.enums.RoleEnum;
 import com.elms.elms_backend.entity.enums.UserStatusEnum;
+import com.elms.elms_backend.repository.auth.RefreshTokenRepository;
 import com.elms.elms_backend.repository.department.DepartmentRepository;
 import com.elms.elms_backend.repository.user.RoleRepository;
 import com.elms.elms_backend.repository.user.UserRepository;
@@ -39,6 +40,7 @@ public class AuthServiceImpl
     private final JwtService jwtService;
     private final UserRepository userRepo;
     private final UserService userService;
+    private final RefreshTokenRepository refreshTokenRepo;
 
     public AuthServiceImpl(
             RefreshTokenService refreshTokenService,
@@ -47,7 +49,7 @@ public class AuthServiceImpl
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
             UserRepository userRepo,
-            UserService userService
+            UserService userService, RefreshTokenRepository refreshTokenRepo
     ) {
         this.refreshTokenService = refreshTokenService;
 
@@ -58,6 +60,7 @@ public class AuthServiceImpl
         this.jwtService = jwtService;
         this.userRepo = userRepo;
         this.userService = userService;
+        this.refreshTokenRepo = refreshTokenRepo;
     }
 
     @Override
@@ -103,6 +106,14 @@ public class AuthServiceImpl
                     "Invalid credentials"
             );
         }
+        refreshTokenRepo
+                .findByUser(user)
+                .ifPresent(token -> {
+
+                    refreshTokenRepo.delete(token);
+
+                    refreshTokenRepo.flush();
+                });
 
         String department = user.getDepartmentEntity() != null
                 ? user.getDepartmentEntity().getName()
@@ -156,7 +167,7 @@ public class AuthServiceImpl
         if (userRepo.findByEmail(email).isPresent()) {
 
             throw new IllegalStateException(
-                    "Invalid credentials"
+                    "Email already exists"
             );
         }
 
@@ -203,7 +214,7 @@ public class AuthServiceImpl
     @Override
     @Transactional
     public void logoutUser(LogoutRequestDTO refreshTokenDTO) {
-          refreshTokenService.revokeRefreshToken(refreshTokenDTO.getRefreshToken());
+          refreshTokenService.deleteRefreshToken(refreshTokenDTO.getRefreshToken());
     }
 
     /**

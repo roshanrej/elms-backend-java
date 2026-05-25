@@ -23,6 +23,8 @@ public class LeaveRequestProjectionDTO {
 
     private LocalDate endDate;
 
+    private Integer leaveDays;
+
     private String reason;
 
     private LeaveRequestStatusEnum status;

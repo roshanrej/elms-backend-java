@@ -20,17 +20,17 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long Id;
 
-    @Column(name="name")
+    @Column(name="name", nullable = false)
     private String name;
 
     @Column(name="email",unique = true, nullable = false)
     private String email;
 
-    @Column(name = "password_hash")
+    @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "manager_id")
+    @JoinColumn(name = "manager_id", nullable = true)
     private UserEntity manager;
 
     @OneToMany(mappedBy = "manager")
@@ -45,12 +45,13 @@ public class UserEntity {
     @JoinColumn(name = "department_id", nullable = false)
     private DepartmentEntity departmentEntity;
 
-    @Column(name="status")
+    @Column(name="status", nullable = false)
     @Enumerated(EnumType.STRING)
     private UserStatusEnum status;
 
     @Column(name="created_at", nullable = false)
     private LocalDateTime createdAt;
+
     @Column(name="updated_at")
     private LocalDateTime updatedAt;
 }

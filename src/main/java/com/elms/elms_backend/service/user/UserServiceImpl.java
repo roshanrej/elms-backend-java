@@ -51,8 +51,8 @@ public class UserServiceImpl implements  UserService{
     }
 
     /**
-     * @param role
-     * @return
+     * @param roleName
+     * @return List of users based on role
      */
     @Override
     public List<UserEntity> findByRole(RoleEnum roleName) {

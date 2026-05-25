@@ -32,19 +32,22 @@ public class LeaveRequestEntity {
 
     // OPTIONAL
 
-    @Column(name = "start_date")
+    @Column(name = "start_date", nullable = true)
     private LocalDate startDate;
 
-    @Column(name="end_date")
+    @Column(name="end_date", nullable = true)
     private LocalDate endDate;
 
-    @Column(name="reason")
+    @Column(name = "no_of_days", nullable = true)
+    private Integer noOfDays;
+
+    @Column(name="reason",nullable = true)
     private String reason;
 
     @Enumerated(EnumType.STRING)
     private LeaveRequestStatusEnum status;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at",nullable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "submitted_at")
@@ -53,4 +56,6 @@ public class LeaveRequestEntity {
     @Column(name="year")
     private Integer year;
 
+    @Version
+    private Integer version;
 }

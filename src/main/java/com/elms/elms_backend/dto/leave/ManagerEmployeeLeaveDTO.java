@@ -13,12 +13,12 @@ import java.time.LocalDateTime;
 
 @NoArgsConstructor
 public class ManagerEmployeeLeaveDTO  {
-    private LeaveRequestProjectionDTO leaveRequestProjectionDTO;
+    private LeaveRequestProjectionDTO leaveRequests;
     private String employeeEmail;
     private String employeeName;
 
-    public ManagerEmployeeLeaveDTO(LeaveRequestProjectionDTO leaveRequestProjectionDTO, String employeeName, String employeeEmail) {
-        this.leaveRequestProjectionDTO = leaveRequestProjectionDTO;
+    public ManagerEmployeeLeaveDTO(LeaveRequestProjectionDTO leaveRequests, String employeeName, String employeeEmail) {
+        this.leaveRequests = leaveRequests;
         this.employeeName = employeeName;
         this.employeeEmail = employeeEmail;
     }

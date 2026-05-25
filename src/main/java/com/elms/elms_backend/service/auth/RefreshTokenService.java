@@ -9,5 +9,5 @@ public interface RefreshTokenService {
 
     RefreshTokenEntity validateRefreshToken(String token);
 
-    void revokeRefreshToken(String refreshToken);
+    void deleteRefreshToken(String refreshToken);
 }

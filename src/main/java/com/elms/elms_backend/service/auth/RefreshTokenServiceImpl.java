@@ -32,7 +32,6 @@ public class RefreshTokenServiceImpl
     public RefreshTokenEntity createRefreshToken(
             UserEntity user
     ) {
-
         String token = jwtService.generateRefreshToken(
                 new UserPrincipal(user)
         );
@@ -44,7 +43,6 @@ public class RefreshTokenServiceImpl
                         .expiryDate(
                                 LocalDateTime.now().plusDays(7)
                         )
-                        .revoked(false)
                         .build();
 
         return refreshTokenRepo.save(refreshToken);
@@ -63,12 +61,6 @@ public class RefreshTokenServiceImpl
                                 )
                         );
 
-        if (refreshToken.isRevoked()) {
-            throw new RuntimeException(
-                    "Refresh token revoked"
-            );
-        }
-
         if (refreshToken.getExpiryDate()
                 .isBefore(LocalDateTime.now())) {
 
@@ -81,14 +73,10 @@ public class RefreshTokenServiceImpl
     }
     @Transactional
     @Override
-    public void revokeRefreshToken(String refreshToken) {
+    public void deleteRefreshToken(String refreshToken) {
 
         RefreshTokenEntity refreshTokenEntity = refreshTokenRepo.findByToken(refreshToken).orElseThrow(()->new IllegalArgumentException("Invalid token"));
-        if (refreshTokenEntity.isRevoked()) {
-            throw new RuntimeException("Refresh token revoked");
-        }
-        refreshTokenEntity.setRevoked(true);
-        refreshTokenRepo.save(refreshTokenEntity);
+        refreshTokenRepo.delete(refreshTokenEntity);
 
     }
 }

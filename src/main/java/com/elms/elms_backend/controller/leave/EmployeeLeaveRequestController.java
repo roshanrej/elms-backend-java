@@ -16,6 +16,11 @@ public class EmployeeLeaveRequestController {
     public EmployeeLeaveRequestController(LeaveRequestService leaveRequestService) {
         this.leaveRequestService = leaveRequestService;
     }
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<LeaveRequestProjectionDTO> cancelLeaveRequest(@PathVariable Long id){
+        LeaveRequestProjectionDTO response = leaveRequestService.cancelLeaveRequest(id);
+        return ResponseEntity.ok(response);
+    }
 
     @GetMapping("/me")
     public List<LeaveRequestProjectionDTO> getLeaveRequests(){
@@ -27,13 +32,16 @@ public class EmployeeLeaveRequestController {
     }
 
     @PostMapping("/draft")
-    public LeaveRequestProjectionDTO createLeaveDraft(@RequestBody CreateLeaveRequestDTO createLeaveRequestDto) {
-        return leaveRequestService.createLeaveDraft(createLeaveRequestDto);
+    public ResponseEntity<LeaveRequestProjectionDTO> createLeaveDraft(@RequestBody CreateLeaveRequestDTO createLeaveRequestDto) {
+        LeaveRequestProjectionDTO response = leaveRequestService.createLeaveDraft(createLeaveRequestDto);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/submit")
-    public LeaveRequestProjectionDTO submitNewLeaveRequest(@RequestBody CreateLeaveRequestDTO createLeaveRequestDto) {
-        return leaveRequestService.submitNewLeaveRequest(createLeaveRequestDto);
+    public ResponseEntity<LeaveRequestProjectionDTO> submitNewLeaveRequest(@RequestBody CreateLeaveRequestDTO createLeaveRequestDto) {
+         LeaveRequestProjectionDTO response = leaveRequestService.submitNewLeaveRequest(createLeaveRequestDto);
+         return ResponseEntity.ok(response);
+
     }
 
 
