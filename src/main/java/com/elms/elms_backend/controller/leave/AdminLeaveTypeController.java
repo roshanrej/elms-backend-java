@@ -6,8 +6,11 @@ import com.elms.elms_backend.dto.leavetype.CreateLeaveTypeDTO;
 import com.elms.elms_backend.dto.leavetype.CreateLeaveTypeResponseDTO;
 import com.elms.elms_backend.entity.LeaveTypeEntity;
 import com.elms.elms_backend.service.leavetype.LeaveTypeService;
+import com.elms.elms_backend.util.ResponseHandler;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,14 +24,14 @@ public class AdminLeaveTypeController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<ApiResponseDTO<CreateLeaveTypeResponseDTO>> createLeaveType(CreateLeaveTypeDTO createLeaveTypeDTO){
+    public ResponseEntity<ApiResponseDTO<?>> createLeaveType(@RequestBody  CreateLeaveTypeDTO createLeaveTypeDTO){
         CreateLeaveTypeResponseDTO createLeaveTypeResponseDTO = leaveTypeService.createLeaveType(createLeaveTypeDTO);
-        ApiResponseDTO<CreateLeaveTypeResponseDTO> apiResponseDTO = new ApiResponseDTO<>(
-                true,
+
+        return ResponseHandler.success(
                 createLeaveTypeResponseDTO,
-                "Leave type created!"
+                "Leave type created",
+                HttpStatus.CREATED
         );
-        return ResponseEntity.ok(apiResponseDTO);
     }
 
 }

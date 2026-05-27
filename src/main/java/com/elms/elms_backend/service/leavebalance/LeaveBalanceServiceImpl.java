@@ -1,34 +1,36 @@
 package com.elms.elms_backend.service.leavebalance;
 
+import com.elms.elms_backend.dto.leavepolicy.LeaveBalanceProjectionDTO;
 import com.elms.elms_backend.entity.LeaveBalanceEntity;
 import com.elms.elms_backend.entity.LeaveTypeEntity;
 import com.elms.elms_backend.entity.UserEntity;
 import com.elms.elms_backend.repository.leave.LeaveBalanceRepository;
+import com.elms.elms_backend.service.user.UserService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
-@Service
-public class LeaveBalanceServiceImpl implements LeaveBalanceService{
-    private final LeaveBalanceRepository leaveBalanceRepo;
+import java.time.Year;
+import java.util.List;
 
-    public LeaveBalanceServiceImpl(LeaveBalanceRepository leaveBalanceRepo) {
+@Service
+public class LeaveBalanceServiceImpl implements LeaveBalanceService {
+    private final LeaveBalanceRepository leaveBalanceRepo;
+    private final UserService userService;
+
+
+    public LeaveBalanceServiceImpl(LeaveBalanceRepository leaveBalanceRepo, UserService userService) {
         this.leaveBalanceRepo = leaveBalanceRepo;
+        this.userService = userService;
     }
 
-    /**
-     * Gets total consumed leaves for leave type
-     *
-     * @param user authenticated employee
-     * @param leaveType leaveType
-     * @param year
-     * @return persisted number of leave days for employee
-     */
-
-    public Integer getTotalConsumedLeavesByEmployee(
-            UserEntity user,
-            LeaveTypeEntity leaveType,
-            Integer year
-    ){
-//        LeaveBalanceEntity leaveBalance = leaveBalanceRepo.findByUserAndLeavePolicy(user,leaveType);
-        return 0;
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    @Override
+    public List<LeaveBalanceProjectionDTO> getEmployeeLeaveBalanceProjections() {
+        UserEntity employee = userService.getAuthenticatedUser();
+        Integer year = Year.now().getValue();
+        return leaveBalanceRepo.getLeaveBalanceProjection(
+                employee,
+                year
+        );
     }
 }

@@ -6,6 +6,7 @@ import com.elms.elms_backend.dto.auth.LoginResponseDTO;
 import com.elms.elms_backend.dto.auth.LogoutRequestDTO;
 import com.elms.elms_backend.dto.token.AccessTokenRequestDTO;
 import com.elms.elms_backend.dto.token.AccessTokenResponseDTO;
+import com.elms.elms_backend.dto.user.UserContextDTO;
 import com.elms.elms_backend.entity.RefreshTokenEntity;
 import com.elms.elms_backend.entity.UserEntity;
 import com.elms.elms_backend.security.JwtService;
@@ -33,6 +34,7 @@ public class AuthController {
     private final AuthService authService;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
+
     public AuthController(
             AuthService authService, JwtService jwtService, RefreshTokenService refreshTokenService
     ) {
@@ -40,8 +42,9 @@ public class AuthController {
         this.jwtService = jwtService;
         this.refreshTokenService = refreshTokenService;
     }
+
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponseDTO<?>> logoutUser(@RequestBody LogoutRequestDTO logoutRequestDTO){
+    public ResponseEntity<ApiResponseDTO<?>> logoutUser(@RequestBody LogoutRequestDTO logoutRequestDTO) {
         authService.logoutUser(logoutRequestDTO);
         return ResponseHandler.success(
                 null,
@@ -49,10 +52,11 @@ public class AuthController {
                 HttpStatus.OK
         );
     }
+
     @GetMapping("/me")
     public ResponseEntity<ApiResponseDTO<?>> validateSession() {
 
-        LoginResponseDTO response =
+        UserContextDTO response =
                 authService.validateSession();
 
         return ResponseHandler.success(
@@ -88,7 +92,7 @@ public class AuthController {
     /**
      * Refreshes expired access token using
      * valid refresh token issued during login.
-     *
+     * <p>
      * This endpoint validates refresh token state,
      * reconstructs authenticated user identity,
      * and generates a new short-lived access token.
@@ -110,11 +114,11 @@ public class AuthController {
                 );
 
         UserEntity user = refreshToken.getUser();
+        UserPrincipal userPrincipal = new UserPrincipal(user);
+        String accessToken = jwtService.generateAccessToken(userPrincipal);
+        UserContextDTO userContextDTO = new UserContextDTO(user.getName(),user.getEmail(), user.getRole().getName(), user.getDepartment().getName());
 
-          AccessTokenResponseDTO accessTokenResponseDTO =
-                new AccessTokenResponseDTO(jwtService.generateAccessToken(
-                        new UserPrincipal(user)
-                ), user.getEmail(),user.getRole().getName(), user.getName());
+        AccessTokenResponseDTO accessTokenResponseDTO = new AccessTokenResponseDTO(accessToken,userContextDTO);
 
         return ResponseHandler.success(
                 accessTokenResponseDTO,

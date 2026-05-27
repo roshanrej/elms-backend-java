@@ -1,5 +1,6 @@
 package com.elms.elms_backend.service.user;
 
+import com.elms.elms_backend.entity.LeaveRequestEntity;
 import com.elms.elms_backend.entity.RoleEntity;
 import com.elms.elms_backend.entity.UserEntity;
 import com.elms.elms_backend.entity.enums.RoleEnum;
@@ -60,5 +61,29 @@ public class UserServiceImpl implements  UserService{
         return  userRepo.findByRole(role);
     }
 
-
+    /**
+     * @throws IllegalStateException when employee has no assigned manager
+     */
+    @Override
+    public void requireAssignedManager(UserEntity employee) {
+        if (employee.getManager() == null) {
+            throw new IllegalStateException("Employee has no assigned manager.");
+        }
+    }
+/**
+ * @throws IllegalStateException when manager doesn't have employee as subordinate
+ *
+ */
+    @Override
+    public void validateManager(LeaveRequestEntity leaveRequest, UserEntity manager) {
+        UserEntity employee = leaveRequest.getEmployee();
+        if(
+                !employee.getManager()
+                        .getId()
+                        .equals(manager.getId())
+        )
+        {
+            throw new IllegalStateException("Unauthorized action.");
+        }
+    }
 }

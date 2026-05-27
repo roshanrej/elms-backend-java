@@ -12,6 +12,4 @@ public class CreateLeaveTypeResponseDTO {
     private Long id;
     private String name;
     private LeaveTypeStatusEnum status;
-
-
 }

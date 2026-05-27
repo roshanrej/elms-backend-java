@@ -11,6 +11,7 @@ import com.elms.elms_backend.mapper.leave.LeaveRequestMapper;
 import com.elms.elms_backend.repository.leave.LeaveBalanceRepository;
 import com.elms.elms_backend.repository.leave.LeavePolicyRepository;
 import com.elms.elms_backend.repository.leave.LeaveRequestRepository;
+import com.elms.elms_backend.service.leavebalance.LeaveBalanceService;
 import com.elms.elms_backend.service.leavetype.LeaveTypeService;
 import com.elms.elms_backend.service.user.UserService;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,6 +33,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     private final LeaveRequestMapper leaveRequestMapper;
     private final LeavePolicyRepository leavePolicyRepo;
     private final LeaveBalanceRepository leaveBalanceRepo;
+    private final LeaveBalanceService leaveBalanceService;
 
     public LeaveRequestServiceImpl(
             LeaveRequestRepository leaveRequestRepo,
@@ -39,7 +41,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
             LeaveTypeService leaveTypeService,
             LeaveRequestMapper leaveRequestMapper,
             LeavePolicyRepository leavePolicyRepo,
-            LeaveBalanceRepository leaveBalanceRepo) {
+            LeaveBalanceRepository leaveBalanceRepo, LeaveBalanceService leaveBalanceService) {
 
         this.leaveRequestRepo = leaveRequestRepo;
         this.userService = userService;
@@ -47,7 +49,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         this.leaveRequestMapper = leaveRequestMapper;
         this.leavePolicyRepo = leavePolicyRepo;
         this.leaveBalanceRepo = leaveBalanceRepo;
-
+        this.leaveBalanceService = leaveBalanceService;
     }
 
 
@@ -66,6 +68,9 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     @Override
     @Transactional
     public LeaveRequestProjectionDTO cancelLeaveRequest(Long leaveRequestId){
+        UserEntity employee = userService.getAuthenticatedUser();
+        userService.requireAssignedManager(employee);
+
         LeaveRequestEntity leaveRequest = findLeaveOrThrow(leaveRequestId);
         validateTransition(leaveRequest,LeaveRequestActionEnum.CANCEL_REQUEST);
         return updateAndSaveLeaveStatus(leaveRequest,LeaveRequestStatusEnum.CANCELLED);
@@ -81,7 +86,9 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     @Override
     @Transactional
     public LeaveRequestProjectionDTO createLeaveDraft(CreateLeaveRequestDTO createLeaveRequestDto) {
-        UserEntity employee = resolveAndValidateEmployee();
+        UserEntity employee = userService.getAuthenticatedUser();
+        userService.requireAssignedManager(employee);
+
         LeaveTypeEntity leaveType = leaveTypeService.resolveOptionalLeaveType(createLeaveRequestDto.getLeaveType());
         Integer year = extractYear(createLeaveRequestDto.getStartDate());
 
@@ -107,10 +114,23 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     @Override
     @Transactional
     public LeaveRequestProjectionDTO submitNewLeaveRequest(CreateLeaveRequestDTO createLeaveRequestDto) {
-        UserEntity employee = resolveAndValidateEmployee();
+        UserEntity employee = userService.getAuthenticatedUser();
+        userService.requireAssignedManager(employee);
+
         validateSubmissionPayload(createLeaveRequestDto);
         LeaveTypeEntity leaveType = leaveTypeService.resolveLeaveType(createLeaveRequestDto.getLeaveType());
         Integer year = extractYear(createLeaveRequestDto.getStartDate());
+
+        LeavePolicyEntity leavePolicy  = findLeavePolicyOrThrow(leaveType, year);
+
+        LeaveBalanceEntity leaveBalance = leaveBalanceRepo.findByEmployeeAndLeavePolicy(employee, leavePolicy);
+
+        LocalDate startDate = createLeaveRequestDto.getStartDate();
+        LocalDate endDate = createLeaveRequestDto.getEndDate();
+        Integer noOfDays = calculateLeaveDays(startDate, endDate);
+        if(leaveBalance.getRemainingLeave()<noOfDays){
+            throw new RuntimeException("Leave balance insufficient");
+        }
         LeaveRequestEntity savedLeave = buildAndSaveLeaveRequest(
                 employee, leaveType,
                 createLeaveRequestDto,
@@ -133,18 +153,24 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     @Override
     @Transactional
     public LeaveRequestProjectionDTO submitLeaveRequest(Long id, CreateLeaveRequestDTO createLeaveRequestDto) {
-        resolveAndValidateEmployee();
+        UserEntity employee = userService.getAuthenticatedUser();
+        userService.requireAssignedManager(employee);
+
         LeaveRequestEntity leaveRequest = findLeaveOrThrow(id);
-
         validateSubmissionPayload(createLeaveRequestDto);
-        LeaveTypeEntity leaveType = leaveTypeService.resolveLeaveType(createLeaveRequestDto.getLeaveType());
-        validateTransition(leaveRequest, LeaveRequestActionEnum.SUBMIT_REQUEST);
 
+        LeaveTypeEntity leaveType = leaveTypeService.resolveLeaveType(createLeaveRequestDto.getLeaveType());
         LocalDate startDate = createLeaveRequestDto.getStartDate();
+        Integer year = extractYear(startDate);
+        LeavePolicyEntity leavePolicy = findLeavePolicyOrThrow(leaveType, year);
         LocalDate endDate = createLeaveRequestDto.getEndDate();
         Integer noOfDays = calculateLeaveDays(startDate, endDate);
-        Integer year = extractYear(startDate);
 
+        LeaveBalanceEntity leaveBalance = leaveBalanceRepo.findByEmployeeAndLeavePolicy(leaveRequest.getEmployee(), leavePolicy);
+        if(leaveBalance.getRemainingLeave() < noOfDays){
+            throw new RuntimeException("Leave balance insufficient");
+        }
+        validateTransition(leaveRequest, LeaveRequestActionEnum.SUBMIT_REQUEST);
         leaveRequest.setLeaveType(leaveType);
         leaveRequest.setStartDate(startDate);
         leaveRequest.setEndDate(endDate);
@@ -217,6 +243,8 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     @Transactional
     public LeaveRequestProjectionDTO approveCancelRequest(Long id) {
         LeaveRequestEntity leaveRequest = findLeaveOrThrow(id);
+        UserEntity manager = userService.getAuthenticatedUser();
+        userService.validateManager(leaveRequest, manager);
         validateTransition(leaveRequest, LeaveRequestActionEnum.APPROVE_CANCEL);
         resolveLeaveBalanceAndSave(leaveRequest, LeaveRequestActionEnum.APPROVE_CANCEL);
         return updateAndSaveLeaveStatus(leaveRequest, LeaveRequestStatusEnum.CANCELLED);
@@ -234,6 +262,8 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     @Transactional
     public LeaveRequestProjectionDTO rejectCancelRequest(Long id) {
         LeaveRequestEntity leaveRequest = findLeaveOrThrow(id);
+        UserEntity manager = userService.getAuthenticatedUser();
+        userService.validateManager(leaveRequest, manager);
         validateTransition(leaveRequest, LeaveRequestActionEnum.REJECT_CANCEL);
         return updateAndSaveLeaveStatus(leaveRequest, LeaveRequestStatusEnum.APPROVED);
     }
@@ -322,6 +352,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         if (userRole == RoleEnum.EMPLOYEE) {
             if (isOwner && status == LeaveRequestStatusEnum.DRAFT) {
                 actions.add(LeaveRequestActionEnum.DELETE_DRAFT);
+                actions.add(LeaveRequestActionEnum.EDIT_DRAFT);
                 actions.add(LeaveRequestActionEnum.SUBMIT_REQUEST);
             }
             if (isOwner && status == LeaveRequestStatusEnum.PENDING) {
@@ -352,20 +383,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     // -------------------------------------------------------------------------
 
 
-    /**
-     * Returns the authenticated employee, asserting that a manager is assigned.
-     * Centralises the repeated getAuthenticatedUser() + manager-null guard.
-     *
-     * @return authenticated employee entity
-     * @throws IllegalStateException when employee has no assigned manager
-     */
-    private UserEntity resolveAndValidateEmployee() {
-        UserEntity employee = userService.getAuthenticatedUser();
-        if (employee.getManager() == null) {
-            throw new IllegalStateException("Employee has no assigned manager.");
-        }
-        return employee;
-    }
+
 
 
     /**
@@ -388,6 +406,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         int noOfDaysRequested = leaveRequest.getNoOfDays();
 
         switch(action){
+
             case APPROVE_REQUEST -> {if (leaveBalance.getRemainingLeave() < noOfDaysRequested) {
                 throw new IllegalStateException("Leave balance insufficient");
             }
@@ -474,7 +493,6 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     private LeaveRequestProjectionDTO updateAndSaveLeaveStatus(
             LeaveRequestEntity leaveRequest,
             LeaveRequestStatusEnum newStatus) {
-
         leaveRequest.setStatus(newStatus);
         LeaveRequestEntity savedLeave = leaveRequestRepo.save(leaveRequest);
         return mapWithActions(savedLeave);
@@ -521,7 +539,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
                 }
             }
 
-            case DELETE_DRAFT -> {
+            case DELETE_DRAFT,EDIT_DRAFT -> {
                 if (status != LeaveRequestStatusEnum.DRAFT) {
                     throw new IllegalStateException("Only draft leave requests can be modified.");
                 }

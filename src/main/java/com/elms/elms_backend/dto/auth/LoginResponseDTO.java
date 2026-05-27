@@ -1,26 +1,24 @@
 package com.elms.elms_backend.dto.auth;
 
+import com.elms.elms_backend.dto.user.UserContextDTO;
 import com.elms.elms_backend.entity.enums.RoleEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
-@AllArgsConstructor
+
 public class LoginResponseDTO {
-    private String name;
-    private String email;
-    private String role;
-    private String department;
+    private UserContextDTO user;
     private String accessToken;
     private String refreshToken;
 
-    public LoginResponseDTO(String name, String email, String role, String department) {
+    public LoginResponseDTO(UserContextDTO userContextDTO, String accessToken, String refreshToken) {
+        this.user = userContextDTO;
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
 
- this.name = name;
- this.role  = role;
- this.email = email;
- this.department = department;
     }
+
 }
 
 

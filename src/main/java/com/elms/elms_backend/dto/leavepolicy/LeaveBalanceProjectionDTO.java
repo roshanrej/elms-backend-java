@@ -8,7 +8,6 @@ import lombok.*;
 @NoArgsConstructor
 @Data
 public class LeaveBalanceProjectionDTO {
-    private Long userId;
     private String leaveTypeName;
     private Integer year;
     private Integer allocatedLeave;

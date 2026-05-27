@@ -14,7 +14,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponseDTO<?>>
     handleRuntimeException(RuntimeException ex) {
-
         return ResponseHandler.failure(
                 ex.getMessage(),
                 HttpStatus.BAD_REQUEST

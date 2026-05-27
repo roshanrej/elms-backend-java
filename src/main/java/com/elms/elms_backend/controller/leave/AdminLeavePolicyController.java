@@ -18,10 +18,7 @@ public class AdminLeavePolicyController {
         this.leavePolicyService = leavePolicyService;
     }
 
-    @GetMapping("/current/active")
-    public List<LeavePolicyProjectionDTO> getCurrentActiveLeavePolicies(){
-        return leavePolicyService.getCurrentActiveLeavePolicies();
-    }
+
     @GetMapping("/{year}")
     public List<LeavePolicyProjectionDTO> getLeavePolicies(@PathVariable Integer year){
         return leavePolicyService.getLeavePolicies(year);

@@ -5,6 +5,8 @@ import com.elms.elms_backend.dto.leave.CreateLeaveRequestDTO;
 import com.elms.elms_backend.dto.leave.LeaveRequestProjectionDTO;
 import com.elms.elms_backend.dto.leave.ManagerEmployeeLeaveDTO;
 import com.elms.elms_backend.service.leave.LeaveRequestService;
+import com.elms.elms_backend.util.ResponseHandler;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,40 +23,37 @@ public class ManagerLeaveRequestController {
     }
 
     @GetMapping()
-    public ResponseEntity<ApiResponseDTO<List<ManagerEmployeeLeaveDTO>>> getLeaveRequests(){
+    public ResponseEntity<ApiResponseDTO<?>> getLeaveRequests(){
         List<ManagerEmployeeLeaveDTO> employeeLeaveDTOS = leaveRequestService.getLeaveRequests();
-        ApiResponseDTO<List<ManagerEmployeeLeaveDTO>> apiResponseDTO = new ApiResponseDTO<>
-                (
-                        true,employeeLeaveDTOS,null
+
+                return ResponseHandler.success(
+                        employeeLeaveDTOS,
+                        "Employee leave requests retrieved",
+                        HttpStatus.OK
                 );
-                return ResponseEntity.ok(apiResponseDTO);
     }
     @PostMapping("/{id}/approve-request")
-    public ResponseEntity<ApiResponseDTO<LeaveRequestProjectionDTO>> approveLeaveRequest(@PathVariable Long id){
+    public ResponseEntity<ApiResponseDTO<?>> approveLeaveRequest(@PathVariable Long id){
         LeaveRequestProjectionDTO responseData = leaveRequestService.approveLeaveRequest(id);
-        ApiResponseDTO<LeaveRequestProjectionDTO> apiResponseDTO = new
-                ApiResponseDTO<LeaveRequestProjectionDTO>(
-                        true,
+        return ResponseHandler.success(
                 responseData,
-                "Leave request approved successfully"
+                "Leave request approved",
+                HttpStatus.OK
         );
-        return ResponseEntity.ok(apiResponseDTO);
     }
 
     @PostMapping("/{id}/reject-request")
-    public ResponseEntity<ApiResponseDTO<LeaveRequestProjectionDTO>> rejectLeaveRequest(@PathVariable Long id){
+    public ResponseEntity<ApiResponseDTO<?>> rejectLeaveRequest(@PathVariable Long id){
         LeaveRequestProjectionDTO responseData = leaveRequestService.rejectLeaveRequest(id);
-        ApiResponseDTO<LeaveRequestProjectionDTO> apiResponseDTO = new
-                ApiResponseDTO<LeaveRequestProjectionDTO>(
-                true,
+        return ResponseHandler.success(
                 responseData,
-                "Leave request approved successfully"
+                "Leave request rejected",
+                HttpStatus.OK
         );
-        return ResponseEntity.ok(apiResponseDTO);
     }
 
     @PostMapping("/{id}/approve-cancel")
-    public ResponseEntity<LeaveRequestProjectionDTO>
+    public ResponseEntity<ApiResponseDTO<?>>
     cancelLeaveRequest(
             @PathVariable Long id
 
@@ -66,10 +65,14 @@ public class ManagerLeaveRequestController {
                                 id
                         );
 
-        return ResponseEntity.ok(response);
+        return ResponseHandler.success(
+                response,
+                "Leave cancel approved",
+                HttpStatus.OK
+        );
     }
     @PostMapping("/{id}/reject-cancel")
-    public ResponseEntity<LeaveRequestProjectionDTO>
+    public ResponseEntity<ApiResponseDTO<?>>
     rejectLeaveCancel(
             @PathVariable Long id
 
@@ -81,7 +84,11 @@ public class ManagerLeaveRequestController {
                                 id
                         );
 
-        return ResponseEntity.ok(response);
+        return ResponseHandler.success(
+                response,
+                "Leave request rejected",
+                HttpStatus.OK
+        );
     }
 
 }

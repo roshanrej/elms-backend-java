@@ -2,8 +2,9 @@ package com.elms.elms_backend.entity.enums;
 
 
 public enum LeaveRequestActionEnum {
-    CANCEL_REQUEST,
     DELETE_DRAFT,
+    EDIT_DRAFT,
+    CANCEL_REQUEST,
     SUBMIT_REQUEST,
     APPROVE_REQUEST,
     REJECT_REQUEST,

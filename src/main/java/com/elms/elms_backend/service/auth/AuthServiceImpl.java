@@ -3,6 +3,7 @@ package com.elms.elms_backend.service.auth;
 import com.elms.elms_backend.dto.auth.LoginRequestDTO;
 import com.elms.elms_backend.dto.auth.LoginResponseDTO;
 import com.elms.elms_backend.dto.auth.LogoutRequestDTO;
+import com.elms.elms_backend.dto.user.UserContextDTO;
 import com.elms.elms_backend.entity.DepartmentEntity;
 import com.elms.elms_backend.entity.RefreshTokenEntity;
 import com.elms.elms_backend.entity.RoleEntity;
@@ -17,6 +18,7 @@ import com.elms.elms_backend.security.JwtService;
 import com.elms.elms_backend.security.UserPrincipal;
 import com.elms.elms_backend.service.user.UserService;
 
+import org.springframework.boot.webmvc.autoconfigure.WebMvcProperties;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,16 +66,13 @@ public class AuthServiceImpl
     }
 
     @Override
-    public LoginResponseDTO validateSession() {
+    public UserContextDTO validateSession() {
         UserEntity user = userService.getAuthenticatedUser();
-        String department = user.getDepartmentEntity().getName();
-
-        return new LoginResponseDTO(
-                user.getName(),
+        String department = user.getDepartment().getName();
+        return new UserContextDTO(user.getName(),
                 user.getEmail(),
-                user.getRole().getName().toString(),
-                department
-        );
+                user.getRole().getName(),
+                department);
     }
 
     /**
@@ -96,27 +95,29 @@ public class AuthServiceImpl
                         loginRequestDto.getEmail()
                 ).orElseThrow(() ->
                         new RuntimeException("Invalid credentials"));
+        if(user.getStatus()!= UserStatusEnum.ACTIVE){
+            throw new RuntimeException("Invalid user");
+        }
 
         if (!passwordEncoder.matches(
                 loginRequestDto.getPassword(),
                 user.getPasswordHash()
-        )) {
-
+        )
+        ) {
             throw new RuntimeException(
                     "Invalid credentials"
             );
         }
+
         refreshTokenRepo
                 .findByUser(user)
                 .ifPresent(token -> {
-
                     refreshTokenRepo.delete(token);
-
                     refreshTokenRepo.flush();
                 });
 
-        String department = user.getDepartmentEntity() != null
-                ? user.getDepartmentEntity().getName()
+        String department = user.getDepartment() != null
+                ? user.getDepartment().getName()
                 : null;
 
         String accessToken =
@@ -124,17 +125,19 @@ public class AuthServiceImpl
                         new UserPrincipal(user)
                 );
 
-        RefreshTokenEntity refreshToken =
+        RefreshTokenEntity refreshTokenEntity =
                 refreshTokenService.createRefreshToken(user);
 
-
-        return new LoginResponseDTO(
+        String refreshToken = refreshTokenEntity.getToken();
+        UserContextDTO userContext = new UserContextDTO(
                 user.getName(),
                 user.getEmail(),
-                user.getRole().getName().toString(),
-                department,
+                user.getRole().getName(),
+                department);
+        return new LoginResponseDTO(
+                userContext,
                 accessToken,
-                refreshToken.getToken()
+                refreshToken
         );
     }
 
@@ -203,7 +206,7 @@ public class AuthServiceImpl
                 .email(email)
                 .passwordHash(hashedPassword)
                 .role(role)
-                .departmentEntity(departmentEntity)
+                .department(departmentEntity)
                 .status(UserStatusEnum.ACTIVE)
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -214,7 +217,7 @@ public class AuthServiceImpl
     @Override
     @Transactional
     public void logoutUser(LogoutRequestDTO refreshTokenDTO) {
-          refreshTokenService.deleteRefreshToken(refreshTokenDTO.getRefreshToken());
+        refreshTokenService.deleteRefreshToken(refreshTokenDTO.getRefreshToken());
     }
 
     /**

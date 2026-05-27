@@ -1,8 +1,11 @@
 package com.elms.elms_backend.controller.leave;
 
+import com.elms.elms_backend.dto.api.ApiResponseDTO;
 import com.elms.elms_backend.dto.leave.CreateLeaveRequestDTO;
 import com.elms.elms_backend.dto.leave.LeaveRequestProjectionDTO;
 import com.elms.elms_backend.service.leave.LeaveRequestService;
+import com.elms.elms_backend.util.ResponseHandler;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,36 +20,59 @@ public class EmployeeLeaveRequestController {
         this.leaveRequestService = leaveRequestService;
     }
     @PostMapping("/{id}/cancel")
-    public ResponseEntity<LeaveRequestProjectionDTO> cancelLeaveRequest(@PathVariable Long id){
+    public ResponseEntity<ApiResponseDTO<?>> cancelLeaveRequest(@PathVariable Long id){
         LeaveRequestProjectionDTO response = leaveRequestService.cancelLeaveRequest(id);
-        return ResponseEntity.ok(response);
+
+        return ResponseHandler.success(
+                response,
+                "Leave request cancelled successfully.",
+                HttpStatus.OK
+        );
     }
 
     @GetMapping("/me")
-    public List<LeaveRequestProjectionDTO> getLeaveRequests(){
-        return leaveRequestService.getEmployeeLeaveRequests();
+    public ResponseEntity<ApiResponseDTO<?>> getLeaveRequests(){
+        List<LeaveRequestProjectionDTO> leaveRequests = leaveRequestService.getEmployeeLeaveRequests();
+        return ResponseHandler.success(
+                leaveRequests,
+                "Leave requests retrieved.",
+                HttpStatus.OK
+        );
     }
     @GetMapping("/me/drafts")
-    public List<LeaveRequestProjectionDTO> getEmployeeLeaveDrafts(){
-        return leaveRequestService.getEmployeeLeaveDrafts();
+    public ResponseEntity<ApiResponseDTO<?>> getEmployeeLeaveDrafts(){
+        List<LeaveRequestProjectionDTO> leaveRequests = leaveRequestService.getEmployeeLeaveDrafts();
+        return ResponseHandler.success(
+                leaveRequests,
+                "Leave drafts retrieved.",
+                HttpStatus.OK
+        );
     }
 
     @PostMapping("/draft")
-    public ResponseEntity<LeaveRequestProjectionDTO> createLeaveDraft(@RequestBody CreateLeaveRequestDTO createLeaveRequestDto) {
+    public ResponseEntity<ApiResponseDTO<?>> createLeaveDraft(@RequestBody CreateLeaveRequestDTO createLeaveRequestDto) {
         LeaveRequestProjectionDTO response = leaveRequestService.createLeaveDraft(createLeaveRequestDto);
-        return ResponseEntity.ok(response);
+        return ResponseHandler.success(
+                response,
+                "Leave draft created.",
+                HttpStatus.CREATED
+        );
     }
 
     @PostMapping("/submit")
-    public ResponseEntity<LeaveRequestProjectionDTO> submitNewLeaveRequest(@RequestBody CreateLeaveRequestDTO createLeaveRequestDto) {
+    public ResponseEntity<ApiResponseDTO<?>> submitNewLeaveRequest(@RequestBody CreateLeaveRequestDTO createLeaveRequestDto) {
          LeaveRequestProjectionDTO response = leaveRequestService.submitNewLeaveRequest(createLeaveRequestDto);
-         return ResponseEntity.ok(response);
+         return ResponseHandler.success(
+                 response,
+                 "Leave request submitted.",
+                 HttpStatus.CREATED
+         );
 
     }
 
 
     @PostMapping("/{id}/submit")
-    public ResponseEntity<LeaveRequestProjectionDTO>
+    public ResponseEntity<ApiResponseDTO<?>>
     submitLeaveRequest(
             @PathVariable Long id,
             @RequestBody
@@ -60,10 +86,14 @@ public class EmployeeLeaveRequestController {
                                 createLeaveRequestDto
                         );
 
-        return ResponseEntity.ok(response);
+        return ResponseHandler.success(
+                response,
+                "Leave request submitted.",
+                HttpStatus.OK
+        );
     }
     @PostMapping("/{id}/request-cancel")
-    public ResponseEntity<LeaveRequestProjectionDTO>
+    public ResponseEntity<ApiResponseDTO<?>>
     requestLeaveCancel(
             @PathVariable Long id
 
@@ -75,6 +105,11 @@ public class EmployeeLeaveRequestController {
                                 id
                         );
 
-        return ResponseEntity.ok(response);
+        return ResponseHandler.success(
+                response,
+                "Leave cancel requested.",
+                HttpStatus.OK
+
+        );
     }
 }
