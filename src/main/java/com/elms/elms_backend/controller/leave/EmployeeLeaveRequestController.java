@@ -3,7 +3,7 @@ package com.elms.elms_backend.controller.leave;
 import com.elms.elms_backend.dto.api.ApiResponseDTO;
 import com.elms.elms_backend.dto.leave.CreateLeaveRequestDTO;
 import com.elms.elms_backend.dto.leave.LeaveRequestProjectionDTO;
-import com.elms.elms_backend.service.leave.LeaveRequestService;
+import com.elms.elms_backend.service.leaverequest.LeaveRequestService;
 import com.elms.elms_backend.util.ResponseHandler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +19,7 @@ public class EmployeeLeaveRequestController {
     public EmployeeLeaveRequestController(LeaveRequestService leaveRequestService) {
         this.leaveRequestService = leaveRequestService;
     }
-    @PostMapping("/{id}/cancel")
+    @PostMapping("/{id}/cancel-request")
     public ResponseEntity<ApiResponseDTO<?>> cancelLeaveRequest(@PathVariable Long id){
         LeaveRequestProjectionDTO response = leaveRequestService.cancelLeaveRequest(id);
 
@@ -48,7 +48,11 @@ public class EmployeeLeaveRequestController {
                 HttpStatus.OK
         );
     }
-
+@PostMapping("/drafts/{id}/delete")
+public ResponseEntity<ApiResponseDTO<?>> deleteLeaveDraft(@PathVariable Long id){
+        leaveRequestService.deleteLeaveDraft(id);
+        return ResponseHandler.success(null,"Leave draft deleted.",HttpStatus.OK);
+}
     @PostMapping("/draft")
     public ResponseEntity<ApiResponseDTO<?>> createLeaveDraft(@RequestBody CreateLeaveRequestDTO createLeaveRequestDto) {
         LeaveRequestProjectionDTO response = leaveRequestService.createLeaveDraft(createLeaveRequestDto);
@@ -64,7 +68,7 @@ public class EmployeeLeaveRequestController {
          LeaveRequestProjectionDTO response = leaveRequestService.submitNewLeaveRequest(createLeaveRequestDto);
          return ResponseHandler.success(
                  response,
-                 "Leave request submitted.",
+                 "Leave request submitted for approval.",
                  HttpStatus.CREATED
          );
 
@@ -88,7 +92,7 @@ public class EmployeeLeaveRequestController {
 
         return ResponseHandler.success(
                 response,
-                "Leave request submitted.",
+                "Leave request submitted for approval.",
                 HttpStatus.OK
         );
     }

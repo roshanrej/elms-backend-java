@@ -16,6 +16,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Configuration
 @RequiredArgsConstructor
@@ -24,6 +28,28 @@ public class SeedDataConfig {
     private final RoleRepository roleRepo;
     private final DepartmentRepository departmentRepo;
     private final LeaveTypeRepository leaveTypeRepo;
+    private final Set<String> departmentNames = new HashSet<>(
+            Set.of(
+                    "HR",
+                    "ENGINEERING",
+                    "FINANCE",
+                    "MARKETING",
+                    "SALES",
+                    "OPERATIONS",
+                    "ADMIN",
+                    "SUPPORT"
+            )
+    );
+    private final Set<String> leaveTypeNames = new HashSet<>(
+            Set.of(
+                    "CASUAL",
+                    "ANNUAL",
+                    "SICK",
+                    "MATERNITY",
+                    "PATERNITY"
+            )
+    );
+
 
     @Bean
     CommandLineRunner seedData() {
@@ -50,41 +76,33 @@ public class SeedDataConfig {
             // DEPARTMENTS
 
             if(departmentRepo.count() == 0){
+                for(String deptName : departmentNames){
+                    departmentRepo.save(
+                            DepartmentEntity.builder()
+                                    .name(deptName)
+                                    .createdAt(LocalDateTime.now())
+                                    .status(DepartmentStatusEnum.ACTIVE)
+                                    .build()
+                    );
+                }
 
-                departmentRepo.save(
-                        DepartmentEntity.builder()
-                                .name("HUMAN_RESOURCES")
-                                .createdAt(LocalDateTime.now())
-                                .status(DepartmentStatusEnum.ACTIVE)
-                                .build()
-                );
 
-                departmentRepo.save(
-                        DepartmentEntity.builder()
-                                .name("ENGINEERING")
-                                .createdAt(LocalDateTime.now())
-                                .status(DepartmentStatusEnum.ACTIVE)
-                                .build()
-                );
             }
 
             // LEAVE TYPES
 
             if(leaveTypeRepo.count() == 0){
+                for(String leaveTypeName: leaveTypeNames){
+                    leaveTypeRepo.save(
+                            LeaveTypeEntity.builder()
+                                    .name(leaveTypeName)
+                                    .status(LeaveTypeStatusEnum.ACTIVE)
+                                    .build()
+                    );
 
-                leaveTypeRepo.save(
-                        LeaveTypeEntity.builder()
-                                .name("SICK")
-                                .status(LeaveTypeStatusEnum.ACTIVE)
-                                .build()
-                );
+                }
 
-                leaveTypeRepo.save(
-                        LeaveTypeEntity.builder()
-                                .name("CASUAL")
-                                .status(LeaveTypeStatusEnum.ACTIVE)
-                                .build()
-                );
+
             }
         };
     }

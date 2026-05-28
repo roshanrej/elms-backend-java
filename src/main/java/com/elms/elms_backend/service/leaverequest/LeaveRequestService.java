@@ -1,10 +1,8 @@
-package com.elms.elms_backend.service.leave;
+package com.elms.elms_backend.service.leaverequest;
 
 import com.elms.elms_backend.dto.leave.CreateLeaveRequestDTO;
 import com.elms.elms_backend.dto.leave.LeaveRequestProjectionDTO;
 import com.elms.elms_backend.dto.leave.ManagerEmployeeLeaveDTO;
-import com.elms.elms_backend.entity.LeaveRequestEntity;
-import com.elms.elms_backend.entity.enums.LeaveRequestActionEnum;
 
 import java.util.List;
 

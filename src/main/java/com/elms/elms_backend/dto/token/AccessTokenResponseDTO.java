@@ -11,7 +11,5 @@ import lombok.*;
 @AllArgsConstructor
 public class AccessTokenResponseDTO {
     private String accessToken;
-   private UserContextDTO userContextDTO;
-
-
+   private UserContextDTO user;
 }

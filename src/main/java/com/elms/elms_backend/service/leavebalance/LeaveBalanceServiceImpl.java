@@ -2,7 +2,7 @@ package com.elms.elms_backend.service.leavebalance;
 
 import com.elms.elms_backend.dto.leavepolicy.LeaveBalanceProjectionDTO;
 import com.elms.elms_backend.entity.LeaveBalanceEntity;
-import com.elms.elms_backend.entity.LeaveTypeEntity;
+import com.elms.elms_backend.entity.LeavePolicyEntity;
 import com.elms.elms_backend.entity.UserEntity;
 import com.elms.elms_backend.repository.leave.LeaveBalanceRepository;
 import com.elms.elms_backend.service.user.UserService;
@@ -33,4 +33,28 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
                 year
         );
     }
+
+    @Override
+    public LeaveBalanceEntity findLeaveBalanceOrThrow(
+            UserEntity employee,
+            LeavePolicyEntity leavePolicy
+    ) {
+
+        LeaveBalanceEntity leaveBalance =
+                leaveBalanceRepo.findByEmployeeAndLeavePolicy(
+                        employee,
+                        leavePolicy
+                );
+
+        if (leaveBalance == null) {
+
+            throw new IllegalStateException(
+                    "Leave balance not configured."
+            );
+        }
+
+        return leaveBalance;
+    }
+
+
 }

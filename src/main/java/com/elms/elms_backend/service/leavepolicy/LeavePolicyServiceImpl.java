@@ -93,4 +93,30 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
         leaveBalanceRepo.saveAll(balances);
        return leavePolicyMapper.mapToResponse(savedLeavePolicyEntity);
     }
+
+    @Override
+    public LeavePolicyEntity findLeavePolicyOrThrow(
+            LeaveTypeEntity leaveType,
+            Integer year
+    ) {
+
+        LeavePolicyEntity policy =
+                leavePolicyRepo.findByLeaveTypeAndYear(
+                        leaveType,
+                        year
+                );
+
+        if (policy == null) {
+
+            throw new IllegalStateException(
+                    "No leave policy configured for leave type '"
+                            + leaveType.getName()
+                            + "' in year "
+                            + year
+                            + "."
+            );
+        }
+
+        return policy;
+    }
 }
