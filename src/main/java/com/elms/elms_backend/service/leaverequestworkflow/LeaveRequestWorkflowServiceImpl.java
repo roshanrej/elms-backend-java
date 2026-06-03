@@ -7,7 +7,6 @@ import com.elms.elms_backend.entity.enums.LeaveRequestStatusEnum;
 import com.elms.elms_backend.entity.enums.RoleEnum;
 import com.elms.elms_backend.service.user.UserService;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,7 +42,6 @@ public class LeaveRequestWorkflowServiceImpl implements LeaveRequestWorkflowServ
 
         List<LeaveRequestActionEnum> actions =
                 new ArrayList<>();
-
         if (userRole == RoleEnum.EMPLOYEE) {
 
             if (isOwner && status == LeaveRequestStatusEnum.DRAFT) {
@@ -92,14 +90,13 @@ public class LeaveRequestWorkflowServiceImpl implements LeaveRequestWorkflowServ
             LeaveRequestEntity leaveRequest,
             LeaveRequestActionEnum action
     ) {
-
         List<LeaveRequestActionEnum> actions =
                 allowedLeaveActions(leaveRequest);
-
         if (!actions.contains(action)) {
             throw new IllegalStateException(
                     "You are not allowed to perform this action."
             );
         }
     }
+
 }

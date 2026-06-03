@@ -6,5 +6,6 @@ public enum LeaveRequestStatusEnum {
     DRAFT,
     CANCELLED,
     CANCEL_PENDING,
-    PENDING
+    PENDING,
+    DELETED
 }

@@ -7,6 +7,7 @@ import com.elms.elms_backend.entity.LeavePolicyEntity;
 import com.elms.elms_backend.entity.LeaveTypeEntity;
 
 
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -18,4 +19,6 @@ public interface LeavePolicyService {
             LeaveTypeEntity leaveType,
              Integer year
     );
+
+    Integer calculateLeaveDays(LocalDate startDate, LocalDate endDate);
 }

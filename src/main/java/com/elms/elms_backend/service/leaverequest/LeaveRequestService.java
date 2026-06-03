@@ -1,12 +1,30 @@
 package com.elms.elms_backend.service.leaverequest;
 
 import com.elms.elms_backend.dto.leave.CreateLeaveRequestDTO;
+import com.elms.elms_backend.dto.leave.EmployeeLeaveRequestDTO;
 import com.elms.elms_backend.dto.leave.LeaveRequestProjectionDTO;
 import com.elms.elms_backend.dto.leave.ManagerEmployeeLeaveDTO;
+import com.elms.elms_backend.entity.LeaveRequestEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 public interface LeaveRequestService {
+
+    /**
+     * Fetches authenticated employee leave requests.
+     *
+     * @return employee leave requests
+     */
+    public List<EmployeeLeaveRequestDTO>  getEmployeeActiveLeaveRequests();
+
+    /**
+     * Edits existing leave draft
+     * @param id persisted leave draft id
+     * @return LeaveRequestProjectionDTO  persisted updated leave draft
+     */
+    public LeaveRequestProjectionDTO editLeaveDraft(Long id, CreateLeaveRequestDTO createLeaveRequestDTO);
 
 
     /**
@@ -20,7 +38,7 @@ public interface LeaveRequestService {
      * Gets leave requests for logged in Employee
      * @return persisted leave Requests for authenticated employee
      */
-    List<ManagerEmployeeLeaveDTO> getLeaveRequests();
+    List<ManagerEmployeeLeaveDTO> getManagerOwnedLeaveRequests();
 
 
 
@@ -51,12 +69,11 @@ public interface LeaveRequestService {
      * Submits existing leave draft.
      *
      * @param id leave request identifier
-     * @param createLeaveRequestDTO updated leave submission payload
+
      * @return submitted leave projection
      */
     LeaveRequestProjectionDTO submitLeaveRequest(
-            Long id,
-            CreateLeaveRequestDTO createLeaveRequestDTO
+            Long id
     );
 
 
@@ -105,17 +122,6 @@ public interface LeaveRequestService {
 
 
     /**
-     * Rejects leave cancellation request.
-     *
-     * @param id leave request identifier
-     * @return restored approved leave projection
-     */
-    LeaveRequestProjectionDTO rejectCancelRequest(
-            Long id
-    );
-
-
-    /**
      * Deletes employee leave draft.
      *
      * @param id leave request identifier
@@ -125,8 +131,12 @@ public interface LeaveRequestService {
     );
 
 
+    LeaveRequestProjectionDTO rejectCancelRequest(
+            Long id
+    );
+
     /**
-     * Fetches authenticated employee leave requests.
+     * Fetches authenticated employee leave request projections.
      *
      * @return employee leave request projections
      */

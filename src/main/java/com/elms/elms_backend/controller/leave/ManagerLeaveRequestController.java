@@ -21,9 +21,9 @@ public class ManagerLeaveRequestController {
         this.leaveRequestService = leaveRequestService;
     }
 
-    @GetMapping()
+    @GetMapping("/team")
     public ResponseEntity<ApiResponseDTO<?>> getLeaveRequests(){
-        List<ManagerEmployeeLeaveDTO> employeeLeaveDTOS = leaveRequestService.getLeaveRequests();
+        List<ManagerEmployeeLeaveDTO> employeeLeaveDTOS = leaveRequestService.getManagerOwnedLeaveRequests();
 
                 return ResponseHandler.success(
                         employeeLeaveDTOS,
@@ -31,7 +31,7 @@ public class ManagerLeaveRequestController {
                         HttpStatus.OK
                 );
     }
-    @PostMapping("/{id}/approve-request")
+    @PostMapping("/{id}/approve")
     public ResponseEntity<ApiResponseDTO<?>> approveLeaveRequest(@PathVariable Long id){
         LeaveRequestProjectionDTO responseData = leaveRequestService.approveLeaveRequest(id);
         return ResponseHandler.success(
@@ -41,7 +41,7 @@ public class ManagerLeaveRequestController {
         );
     }
 
-    @PostMapping("/{id}/reject-request")
+    @PostMapping("/{id}/reject")
     public ResponseEntity<ApiResponseDTO<?>> rejectLeaveRequest(@PathVariable Long id){
         LeaveRequestProjectionDTO responseData = leaveRequestService.rejectLeaveRequest(id);
         return ResponseHandler.success(
@@ -79,13 +79,13 @@ public class ManagerLeaveRequestController {
 
         LeaveRequestProjectionDTO response =
                 leaveRequestService
-                        .rejectLeaveRequest(
+                        .rejectCancelRequest(
                                 id
                         );
 
         return ResponseHandler.success(
                 response,
-                "Leave request rejected",
+                "Leave cancel rejected",
                 HttpStatus.OK
         );
     }

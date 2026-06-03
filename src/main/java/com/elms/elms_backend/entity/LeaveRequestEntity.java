@@ -53,9 +53,6 @@ public class LeaveRequestEntity {
     @Column(name = "submitted_at")
     private LocalDateTime submittedAt;
 
-    @Column(name="year")
-    private Integer year;
-
     @Version
     private Integer version;
 }

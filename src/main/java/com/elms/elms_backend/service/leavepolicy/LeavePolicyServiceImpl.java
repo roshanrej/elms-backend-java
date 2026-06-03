@@ -13,15 +13,18 @@ import com.elms.elms_backend.entity.enums.RoleEnum;
 import com.elms.elms_backend.mapper.leave.LeavePolicyMapper;
 import com.elms.elms_backend.repository.leave.LeaveBalanceRepository;
 import com.elms.elms_backend.repository.leave.LeavePolicyRepository;
-import com.elms.elms_backend.repository.user.UserRepository;
 import com.elms.elms_backend.service.leavetype.LeaveTypeService;
 import com.elms.elms_backend.service.user.UserService;
+import org.hibernate.grammars.hql.HqlParser;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 @Service
 public class LeavePolicyServiceImpl implements LeavePolicyService {
@@ -118,5 +121,32 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
         }
 
         return policy;
+    }
+
+
+    /**
+     * Calculates the total number of days between two dates inclusively.
+     * * @param startDate start date
+     *
+     * @param endDate end date
+     * @return total days
+     */
+    @Override
+    public Integer calculateLeaveDays(LocalDate startDate, LocalDate endDate) {
+        int noOfDays = 0;
+        LocalDate current = startDate;
+        while(!current.isAfter(endDate)){
+            if (isWorkingDay(current)) {
+                noOfDays++;
+            }
+            current = current.plusDays(1);
+        }
+        return  noOfDays;
+    }
+    private boolean isWorkingDay(LocalDate date) {
+        DayOfWeek dayOfWeek = date.getDayOfWeek();
+
+        return dayOfWeek != DayOfWeek.SATURDAY
+                && dayOfWeek != DayOfWeek.SUNDAY;
     }
 }

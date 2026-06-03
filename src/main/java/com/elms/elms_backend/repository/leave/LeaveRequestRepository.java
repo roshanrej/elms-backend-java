@@ -3,15 +3,25 @@ package  com.elms.elms_backend.repository.leave;
 
 import com.elms.elms_backend.entity.LeaveRequestEntity;
 import com.elms.elms_backend.entity.UserEntity;
+import com.elms.elms_backend.entity.enums.LeaveRequestStatusEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Collection;
 import java.util.List;
 
 
 public interface LeaveRequestRepository extends JpaRepository<LeaveRequestEntity, Long> {
 
+    List<LeaveRequestEntity> findByEmployeeAndStatusNotIn(
+            UserEntity employee,
+            Collection<LeaveRequestStatusEnum> statuses
+    );
 
+    List<LeaveRequestEntity> findByEmployeeAndStatusIn(
+            UserEntity employee,
+            Collection<LeaveRequestStatusEnum> statuses
+    );
     List<LeaveRequestEntity> findByEmployee(UserEntity employee);
 
     @Query("""
