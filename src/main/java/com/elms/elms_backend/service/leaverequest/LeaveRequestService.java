@@ -1,5 +1,6 @@
 package com.elms.elms_backend.service.leaverequest;
 
+import com.elms.elms_backend.dto.dashboard.ManagerDashboardProjectionDTO;
 import com.elms.elms_backend.dto.leave.CreateLeaveRequestDTO;
 import com.elms.elms_backend.dto.leave.EmployeeLeaveRequestDTO;
 import com.elms.elms_backend.dto.leave.LeaveRequestProjectionDTO;
@@ -152,4 +153,7 @@ public interface LeaveRequestService {
     List<LeaveRequestProjectionDTO>
     getEmployeeLeaveDrafts();
 
+
+
+    ManagerDashboardProjectionDTO getManagerDashboardProjection();
 }

@@ -18,7 +18,8 @@ public class LeavePolicyMapper {
                 leavePolicy.getId(),
                 leaveTypeName,
                 leavePolicy.getYear(),
-                leavePolicy.getAllocatedLeave()
+                leavePolicy.getAllocatedLeave(),
+                leavePolicy.getNoticePeriodDays()
         );
     }
 }

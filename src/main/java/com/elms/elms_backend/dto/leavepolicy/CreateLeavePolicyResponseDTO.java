@@ -13,5 +13,6 @@ public class CreateLeavePolicyResponseDTO {
   private String leaveType;
   private Integer year;
   private Integer allocatedLeave;
+  private Integer noticePeriodDays;
 
 }

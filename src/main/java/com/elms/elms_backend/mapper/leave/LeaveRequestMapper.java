@@ -1,5 +1,6 @@
 package com.elms.elms_backend.mapper.leave;
 
+import com.elms.elms_backend.dto.dashboard.ManagerDashboardProjectionDTO;
 import com.elms.elms_backend.dto.leave.EmployeeLeaveRequestDTO;
 import com.elms.elms_backend.dto.leave.LeaveRequestProjectionDTO;
 import com.elms.elms_backend.dto.leave.ManagerEmployeeLeaveDTO;
@@ -42,6 +43,12 @@ public class LeaveRequestMapper {
         );
     }
 
+    public ManagerDashboardProjectionDTO.ManagerDashboardLeaveProjectionDTO mapToManagerDashboardLeaveProjection( LeaveRequestEntity leaveRequest){
+        String name = leaveRequest.getEmployee().getName();
+        String email = leaveRequest.getEmployee().getEmail();
+        EmployeeLeaveRequestDTO employeeLeaveRequestDTO = mapToEmployeeLeaveRequestDTO(leaveRequest);
+        return new ManagerDashboardProjectionDTO.ManagerDashboardLeaveProjectionDTO(email,name, employeeLeaveRequestDTO);
+        }
     /**
      * Maps LeaveRequestEntity into response DTO.
      *

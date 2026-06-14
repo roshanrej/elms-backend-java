@@ -15,7 +15,6 @@ import com.elms.elms_backend.repository.leave.LeaveBalanceRepository;
 import com.elms.elms_backend.repository.leave.LeavePolicyRepository;
 import com.elms.elms_backend.service.leavetype.LeaveTypeService;
 import com.elms.elms_backend.service.user.UserService;
-import org.hibernate.grammars.hql.HqlParser;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,7 +58,7 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
     }
 
     /**
-     * @param createLeavePolicyDTO
+     * @param createLeavePolicyDTO incoming create leave policy dto
      * @return leave policy projection on specific leave Type, year
      */
     @PreAuthorize("hasRole('ADMIN')")
@@ -68,17 +67,23 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
     public CreateLeavePolicyResponseDTO createLeavePolicy(CreateLeavePolicyDTO createLeavePolicyDTO) {
         Integer year = createLeavePolicyDTO.getYear();
         Integer allocatedLeave = createLeavePolicyDTO.getAllocatedLeave();
-        LeaveTypeEntity leaveTypeEntity = leaveTypeService.resolveLeaveType(createLeavePolicyDTO.getLeaveType()); // check for valid leave Type
+        LeaveTypeEntity leaveTypeEntity = leaveTypeService.resolveLeaveType(createLeavePolicyDTO.getLeaveType());
+        Integer noticePeriodDays = createLeavePolicyDTO.getNoticePeriodDays();
+        // check for valid leave Type
         if (leavePolicyRepo.existsByLeaveTypeAndYear(leaveTypeEntity, year)) {
             throw new IllegalStateException("Leave policy already exists");
         }
         if(allocatedLeave <= 0){
             throw new IllegalArgumentException("Allocated leave must be greater than zero");
         }
+        if(noticePeriodDays < 0){
+            throw new IllegalArgumentException("Notice period cannot be less than zero");
+        }
         LeavePolicyEntity leavePolicyEntity = LeavePolicyEntity.builder()
                 .leaveType( leaveTypeEntity)
                 .year(year)
                 .allocatedLeave(allocatedLeave)
+                .noticePeriodDays(noticePeriodDays)
                 .build();
         LeavePolicyEntity savedLeavePolicyEntity = leavePolicyRepo.save(leavePolicyEntity);
 
@@ -92,7 +97,6 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
                         .updatedAt(LocalDateTime.now())
                         .build())
                 .toList();
-
         leaveBalanceRepo.saveAll(balances);
        return leavePolicyMapper.mapToResponse(savedLeavePolicyEntity);
     }
@@ -125,7 +129,7 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 
     /**
-     * Calculates the total number of days between two dates inclusively.
+     * Calculates the total number of days between two dates based on leave policy.
      * * @param startDate start date
      *
      * @param endDate end date
@@ -133,6 +137,9 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
      */
     @Override
     public Integer calculateLeaveDays(LocalDate startDate, LocalDate endDate) {
+        if(startDate == null || endDate == null){
+            return null;
+        }
         int noOfDays = 0;
         LocalDate current = startDate;
         while(!current.isAfter(endDate)){
@@ -143,9 +150,49 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
         }
         return  noOfDays;
     }
+
+    /**
+     * Validates that the leave request does not span multiple years.
+     *
+     * @throws IllegalArgumentException if startDate and endDate are not in the same year.
+     */
+    @Override
+    public void validateLeaveDates(
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+
+        if (startDate.getYear() != endDate.getYear()) {
+            throw new IllegalArgumentException(
+                    "Leave requests cannot span multiple years."
+            );
+        }
+    }
+    /**
+     * Validates that the requested leave date meets the minimum notice period.
+     * * @param startDate the requested start date
+     *
+     * @throws IllegalStateException if the notice period is violated
+     */
+
+    @Override
+    public void validateNoticePeriod(LeavePolicyEntity leavePolicy, LocalDate startDate) {
+        LocalDate today = LocalDate.now();
+
+        if (startDate.isBefore(today)) {
+            throw new IllegalStateException("Leave start date cannot be in the past.");
+        }
+
+        long noticeDays = ChronoUnit.DAYS.between(today, startDate);
+        Integer noticePeriodDays = leavePolicy.getNoticePeriodDays();
+        if(noticePeriodDays != 0){
+            if (noticeDays <   noticePeriodDays){
+            throw new IllegalStateException("Leave requests must be submitted at least " + noticePeriodDays + " days in advance.");
+        }
+        }
+    }
     private boolean isWorkingDay(LocalDate date) {
         DayOfWeek dayOfWeek = date.getDayOfWeek();
-
         return dayOfWeek != DayOfWeek.SATURDAY
                 && dayOfWeek != DayOfWeek.SUNDAY;
     }

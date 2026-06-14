@@ -26,6 +26,7 @@ public class LeavePolicyEntity {
 
     @Column(name="allocated_leave", nullable = false)
     private Integer allocatedLeave;
-
+    @Column(name = "notice_period_days", nullable = false)
+    private Integer noticePeriodDays;
 
 }

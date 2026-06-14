@@ -1,10 +1,7 @@
 package com.elms.elms_backend.dto.leave;
 
 import com.elms.elms_backend.entity.enums.LeaveRequestStatusEnum;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.time.LocalDate;
@@ -13,6 +10,7 @@ import java.time.LocalDate;
 @Setter
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
 public class EmployeeLeaveRequestDTO {
     private Long id;
     private String leaveType;

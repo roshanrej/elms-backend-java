@@ -17,7 +17,8 @@ public interface LeavePolicyRepository extends JpaRepository<LeavePolicyEntity, 
                     lt.name,
                     lt.status,
                     lp.allocatedLeave,
-                    lp.year
+                    lp.year,
+                    lp.noticePeriodDays
                 )
                 FROM LeavePolicyEntity lp
                 LEFT JOIN lp.leaveType lt
@@ -32,7 +33,8 @@ public interface LeavePolicyRepository extends JpaRepository<LeavePolicyEntity, 
                     lt.name,
                     lt.status,
                     lp.allocatedLeave,
-                    lp.year
+                    lp.year,
+                    lp.noticePeriodDays
                 )
                 FROM LeavePolicyEntity lp
                 LEFT JOIN lp.leaveType lt

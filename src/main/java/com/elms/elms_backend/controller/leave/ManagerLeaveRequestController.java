@@ -1,6 +1,7 @@
 package com.elms.elms_backend.controller.leave;
 
 import com.elms.elms_backend.dto.api.ApiResponseDTO;
+import com.elms.elms_backend.dto.dashboard.ManagerDashboardProjectionDTO;
 import com.elms.elms_backend.dto.leave.LeaveRequestProjectionDTO;
 import com.elms.elms_backend.dto.leave.ManagerEmployeeLeaveDTO;
 import com.elms.elms_backend.service.leaverequest.LeaveRequestService;
@@ -22,14 +23,14 @@ public class ManagerLeaveRequestController {
     }
 
     @GetMapping("/team")
-    public ResponseEntity<ApiResponseDTO<?>> getLeaveRequests(){
+    public ResponseEntity<ApiResponseDTO<?>> getActiveLeaveRequests(){
         List<ManagerEmployeeLeaveDTO> employeeLeaveDTOS = leaveRequestService.getManagerOwnedLeaveRequests();
 
-                return ResponseHandler.success(
-                        employeeLeaveDTOS,
-                        "Employee leave requests retrieved",
-                        HttpStatus.OK
-                );
+        return ResponseHandler.success(
+                employeeLeaveDTOS,
+                "Employee leave requests retrieved",
+                HttpStatus.OK
+        );
     }
     @PostMapping("/{id}/approve")
     public ResponseEntity<ApiResponseDTO<?>> approveLeaveRequest(@PathVariable Long id){
@@ -86,6 +87,15 @@ public class ManagerLeaveRequestController {
         return ResponseHandler.success(
                 response,
                 "Leave cancel rejected",
+                HttpStatus.OK
+        );
+    }
+    @GetMapping("/dashboard-projection")
+    public ResponseEntity<ApiResponseDTO<?>> getManagerDashboardProjection(){
+        ManagerDashboardProjectionDTO managerDashboardProjectionDTO = leaveRequestService.getManagerDashboardProjection();
+        return ResponseHandler.success(
+                managerDashboardProjectionDTO,
+                "Dashboard data retrieved.",
                 HttpStatus.OK
         );
     }

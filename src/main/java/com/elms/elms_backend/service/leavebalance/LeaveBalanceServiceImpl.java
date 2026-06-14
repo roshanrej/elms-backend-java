@@ -1,5 +1,6 @@
 package com.elms.elms_backend.service.leavebalance;
 
+import com.elms.elms_backend.dto.leave_analytics.ManagerLeaveAnalyticsProjectionDTO;
 import com.elms.elms_backend.dto.leavepolicy.LeaveBalanceProjectionDTO;
 import com.elms.elms_backend.entity.LeaveBalanceEntity;
 import com.elms.elms_backend.entity.LeavePolicyEntity;
@@ -33,6 +34,41 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
                 year
         );
     }
+
+    @PreAuthorize("hasRole('MANAGER')")
+    @Override
+    public List<LeaveBalanceProjectionDTO> getTeamLeaveBalanceProjections() {
+        Long managerId = userService.getAuthenticatedUser().getId();
+        Integer year = Year.now().getValue();
+        return leaveBalanceRepo.getTeamLeaveBalanceProjection(
+                managerId,
+                year
+        );
+    }
+
+    @PreAuthorize("hasRole('MANAGER')")
+    @Override
+    public ManagerLeaveAnalyticsProjectionDTO getManagerLeaveAnalyticsProjection() {
+        Long managerId = userService.getAuthenticatedUser().getId();
+        Integer year = Year.now().getValue();
+
+        List<LeaveBalanceProjectionDTO> teamLeaveBalances = leaveBalanceRepo.getTeamLeaveBalanceProjection(
+                managerId,
+                year
+        );
+
+        int totalAllocatedLeave = teamLeaveBalances.stream()
+                .mapToInt(LeaveBalanceProjectionDTO::getAllocatedLeave)
+                .sum();
+
+        int totalRemainingLeave = teamLeaveBalances.stream()
+                .mapToInt(LeaveBalanceProjectionDTO::getRemainingLeave)
+                .sum();
+
+
+        // build and return your DTO here
+    }
+
 
     @Override
     public LeaveBalanceEntity findLeaveBalanceOrThrow(

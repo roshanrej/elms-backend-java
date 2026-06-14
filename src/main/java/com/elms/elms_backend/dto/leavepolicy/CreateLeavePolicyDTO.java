@@ -8,8 +8,8 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CreateLeavePolicyDTO {
-    String leaveType;
-    Integer year;
-    Integer allocatedLeave;
-
+    private String leaveType;
+    private Integer year;
+    private Integer allocatedLeave;
+    private Integer noticePeriodDays;
 }

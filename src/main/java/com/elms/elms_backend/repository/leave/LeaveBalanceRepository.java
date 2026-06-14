@@ -1,6 +1,7 @@
 package com.elms.elms_backend.repository.leave;
 
 
+import com.elms.elms_backend.dto.leave_balance.EmployeeLeaveBalanceSummaryDTO;
 import com.elms.elms_backend.dto.leavepolicy.LeaveBalanceProjectionDTO;
 import com.elms.elms_backend.entity.LeaveBalanceEntity;
 import com.elms.elms_backend.entity.LeavePolicyEntity;
@@ -48,6 +49,64 @@ public interface LeaveBalanceRepository extends JpaRepository<LeaveBalanceEntity
 
             @Param("employee")
             UserEntity employee,
+
+            @Param("year")
+            Integer year
+    );
+
+    @Query(
+            """
+            select new com.elms.elms_backend.dto.leavepolicy
+            .LeaveBalanceProjectionDTO(
+    
+                lp.leaveType.name,
+    
+                lp.year,
+    
+                lp.allocatedLeave,
+    
+                lb.consumedLeave,
+    
+                lb.remainingLeave
+            )
+    
+            from LeaveBalanceEntity lb
+    
+            join lb.leavePolicy lp
+    
+            where lb.employee.manager.id = :managerId
+            and lp.year = :year
+            """
+    )
+    List<LeaveBalanceProjectionDTO>
+    getTeamLeaveBalanceProjection(
+
+            @Param("managerId")
+            Long managerId,
+
+            @Param("year")
+            Integer year
+    );
+
+    @Query(
+            """
+SELECT
+    new com.elms.elms_backend.dto.leave_balance.EmployeeLeaveBalanceSummaryDTO(u.id,
+    u.name,
+    SUM(lb.leavePolicy.allocatedLeave) AS totalAllocated,
+    SUM(lb.remainingLeave) AS totalRemaining)
+FROM LeaveBalanceEntity lb
+JOIN UserEntity u ON lb.employee.id = u.id
+WHERE lb.employee.manager.id = :managerId
+  AND lb.leavePolicy.year = :year
+  AND u.status = com.elms.elms_backend.entity.enums.UserStatusEnum.ACTIVE
+GROUP BY u.id, u.name
+
+"""
+    )
+ List<EmployeeLeaveBalanceSummaryDTO> getManagerTeamLeaveBalanceSummary(
+            @Param("managerId")
+            Long managerId,
 
             @Param("year")
             Integer year

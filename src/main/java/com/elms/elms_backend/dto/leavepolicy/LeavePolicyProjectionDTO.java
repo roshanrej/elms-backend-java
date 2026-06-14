@@ -13,4 +13,5 @@ public class LeavePolicyProjectionDTO {
     private LeaveTypeStatusEnum status;
     private Integer allocatedLeave;
     private Integer year;
+    private Integer noticePeriodDays;
 }

@@ -21,4 +21,6 @@ public interface LeavePolicyService {
     );
 
     Integer calculateLeaveDays(LocalDate startDate, LocalDate endDate);
+    void validateLeaveDates(LocalDate startDate, LocalDate endDate);
+    void validateNoticePeriod(LeavePolicyEntity leavePolicy, LocalDate startDate);
 }
