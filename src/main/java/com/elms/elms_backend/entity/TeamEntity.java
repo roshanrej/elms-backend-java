@@ -22,7 +22,7 @@ public class TeamEntity {
     private String name;
 
     @OneToOne
-    @JoinColumn(name = "manager_id")
+    @JoinColumn(name = "manager_id", unique = true)
     private UserEntity manager;
 
     @OneToMany(mappedBy = "team")

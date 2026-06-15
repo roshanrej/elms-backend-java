@@ -1,4 +1,4 @@
-package com.elms.elms_backend.controller.leave;
+package com.elms.elms_backend.controller.leave_policy;
 
 import com.elms.elms_backend.dto.leavepolicy.CreateLeavePolicyDTO;
 import com.elms.elms_backend.dto.leavepolicy.CreateLeavePolicyResponseDTO;

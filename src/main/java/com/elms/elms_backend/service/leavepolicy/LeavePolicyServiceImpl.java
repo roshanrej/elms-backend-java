@@ -13,6 +13,7 @@ import com.elms.elms_backend.entity.enums.RoleEnum;
 import com.elms.elms_backend.mapper.leave.LeavePolicyMapper;
 import com.elms.elms_backend.repository.leave.LeaveBalanceRepository;
 import com.elms.elms_backend.repository.leave.LeavePolicyRepository;
+import com.elms.elms_backend.repository.user.UserRepository;
 import com.elms.elms_backend.service.leavetype.LeaveTypeService;
 import com.elms.elms_backend.service.user.UserService;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,15 +31,16 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
     private final LeavePolicyRepository leavePolicyRepo;
     private final LeaveTypeService leaveTypeService;
     private final LeavePolicyMapper leavePolicyMapper;
-    private final UserService userService;
+    private final UserRepository userRepo;
     private final LeaveBalanceRepository leaveBalanceRepo;
 
-    public LeavePolicyServiceImpl(LeavePolicyRepository leavePolicyRepo, LeaveTypeService leaveTypeService, LeavePolicyMapper leavePolicyMapper, UserService userService, LeaveBalanceRepository leaveBalanceRepo) {
+    public LeavePolicyServiceImpl(LeavePolicyRepository leavePolicyRepo, LeaveTypeService leaveTypeService, LeavePolicyMapper leavePolicyMapper, UserRepository userRepo, LeaveBalanceRepository leaveBalanceRepo) {
         this.leavePolicyRepo = leavePolicyRepo;
 
         this.leaveTypeService = leaveTypeService;
         this.leavePolicyMapper = leavePolicyMapper;
-        this.userService = userService;
+        this.userRepo = userRepo;
+
         this.leaveBalanceRepo = leaveBalanceRepo;
     }
 
@@ -87,8 +89,8 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
                 .build();
         LeavePolicyEntity savedLeavePolicyEntity = leavePolicyRepo.save(leavePolicyEntity);
 
-        List<UserEntity> employees = userService.findByRole(RoleEnum.EMPLOYEE);
-        List<LeaveBalanceEntity> balances = employees.stream()
+        List<UserEntity> users = userRepo.findAll();
+        List<LeaveBalanceEntity> balances = users.stream()
                 .map(employee -> LeaveBalanceEntity.builder()
                         .employee(employee)
                         .leavePolicy(savedLeavePolicyEntity)

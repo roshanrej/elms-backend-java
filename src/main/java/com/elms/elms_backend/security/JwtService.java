@@ -79,17 +79,16 @@ public class JwtService {
     ) {
 
         return Jwts.builder()
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date())
-                .setExpiration(
+                .subject(userDetails.getUsername())
+                .issuedAt(new Date())
+                .expiration(
                         new Date(
                                 System.currentTimeMillis()
                                         + 1000L * 60 * 60 * 24 * 7
                         )
                 )
                 .signWith(
-                        getSigningKey(),
-                        SignatureAlgorithm.HS256
+                        getSigningKey()
                 )
                 .compact();
     }

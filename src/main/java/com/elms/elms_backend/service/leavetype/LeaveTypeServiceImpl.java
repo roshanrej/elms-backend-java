@@ -2,6 +2,7 @@ package com.elms.elms_backend.service.leavetype;
 
 import com.elms.elms_backend.dto.leavetype.CreateLeaveTypeDTO;
 import com.elms.elms_backend.dto.leavetype.CreateLeaveTypeResponseDTO;
+import com.elms.elms_backend.dto.leavetype.LeaveTypeProjectionDTO;
 import com.elms.elms_backend.entity.LeaveTypeEntity;
 import com.elms.elms_backend.entity.enums.LeaveTypeStatusEnum;
 import com.elms.elms_backend.repository.leave.LeaveTypeRepository;
@@ -56,7 +57,6 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
     /**
      * Resolves and validates leave type for
      * submission workflow operations.
-     * <p>
      * Submitted leave requests must reference
      * an active leave type.
      *
@@ -109,12 +109,28 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
     private LeaveTypeEntity getLeaveTypeByName(
             String leaveTypeName
     ) {
-
         return leaveTypeRepo.findByName(leaveTypeName)
                 .orElseThrow(() ->
                         new RuntimeException(
                                 "Invalid leave type"
                         )
                 );
+    }
+
+    @Override
+    public List<String> getActiveLeaveTypes() {
+        return leaveTypeRepo.findByStatusIn(List.of(LeaveTypeStatusEnum.ACTIVE)).stream().map(lr->
+            lr.getName()
+        ).toList();
+    }
+
+    @PreAuthorize("hasRole('ADMIN")
+    @Override
+    public List<LeaveTypeProjectionDTO> getLeaveTypes() {
+        return leaveTypeRepo.findByStatusIn(List.of(LeaveTypeStatusEnum.ACTIVE,LeaveTypeStatusEnum.INACTIVE)).stream().map(lr->
+                new LeaveTypeProjectionDTO(lr.getId(),
+                        lr.getName(),
+                        lr.getStatus())
+        ).toList();
     }
 }
