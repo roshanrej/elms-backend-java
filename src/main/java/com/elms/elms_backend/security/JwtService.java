@@ -2,7 +2,6 @@ package com.elms.elms_backend.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -23,30 +23,16 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
+    private final SecretKey secretKey;
 
-    /**
-     * Generates HMAC signing key from
-     * configured JWT secret.
-     *
-     * @return JWT signing key
-     */
-    private final SecretKey secretKey =
-            Jwts.SIG.HS256.key().build();
+    public JwtService(@Value("${jwt.secret}") String jwtSecret) {
+        this.secretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+    }
 
     private SecretKey getSigningKey() {
         return secretKey;
     }
 
-    /**
-     * Generates short-lived access token
-     * used for API authentication.
-     *
-     * Access token expiry:
-     * 15 minutes
-     *
-     * @param userDetails authenticated user
-     * @return signed JWT access token
-     */
     public String generateAccessToken(
             UserDetails userDetails
     ) {
@@ -64,16 +50,6 @@ public class JwtService {
                 .compact();
     }
 
-    /**
-     * Generates long-lived refresh token
-     * used to obtain new access tokens.
-     *
-     * Refresh token expiry:
-     * 7 days
-     *
-     * @param userDetails authenticated user
-     * @return signed JWT refresh token
-     */
     public String generateRefreshToken(
             UserDetails userDetails
     ) {
@@ -93,13 +69,6 @@ public class JwtService {
                 .compact();
     }
 
-    /**
-     * Extracts username/email subject
-     * from JWT token payload.
-     *
-     * @param token JWT token
-     * @return token subject
-     */
     public String extractUsername(
             String token
     ) {
@@ -110,14 +79,6 @@ public class JwtService {
         );
     }
 
-    /**
-     * Extracts specific claim from JWT payload.
-     *
-     * @param token JWT token
-     * @param claimsResolver claim extraction function
-     * @param <T> claim type
-     * @return extracted claim value
-     */
     public <T> T extractClaim(
             String token,
             Function<Claims, T> claimsResolver
@@ -129,13 +90,6 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
-    /**
-     * Parses and validates JWT payload
-     * using configured signing key.
-     *
-     * @param token JWT token
-     * @return parsed JWT claims
-     */
     private Claims extractAllClaims(
             String token
     ) {
@@ -147,13 +101,6 @@ public class JwtService {
                 .getPayload();
     }
 
-    /**
-     * Validates token ownership and expiry state.
-     *
-     * @param token JWT token
-     * @param userDetails authenticated user
-     * @return true if token is valid
-     */
     public boolean isTokenValid(
             String token,
             UserDetails userDetails
@@ -167,20 +114,13 @@ public class JwtService {
         ) && !isTokenExpired(token);
     }
 
-    /**
-     * Checks whether JWT token
-     * has expired.
-     *
-     * @param token JWT token
-     * @return true if token expired
-     */
     private boolean isTokenExpired(
             String token
     ) {
 
         return extractClaim(
                 token,
-                Claims->Claims.getExpiration()
+                Claims::getExpiration
         ).before(new Date());
     }
 }

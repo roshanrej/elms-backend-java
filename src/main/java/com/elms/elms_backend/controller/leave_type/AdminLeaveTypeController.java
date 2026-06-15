@@ -1,12 +1,9 @@
 package com.elms.elms_backend.controller.leave_type;
 
 import com.elms.elms_backend.dto.api.ApiResponseDTO;
-import com.elms.elms_backend.dto.leavetype.CreateLeaveTypeDTO;
-import com.elms.elms_backend.dto.leavetype.CreateLeaveTypeResponseDTO;
-import com.elms.elms_backend.dto.leavetype.LeaveTypeProjectionDTO;
+import com.elms.elms_backend.dto.leavetype.*;
 import com.elms.elms_backend.service.leavetype.LeaveTypeService;
 import com.elms.elms_backend.util.ResponseHandler;
-import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,4 +40,18 @@ public class AdminLeaveTypeController {
         return ResponseHandler.success(leaveTypes,"Leave types retrieved.",HttpStatus.OK);
     }
 
+    @PatchMapping("/{leaveTypeId}/status")
+    public ResponseEntity<ApiResponseDTO<?>> updateStatus(@PathVariable Long leaveTypeId,@RequestBody UpdateLeaveTypeStatusDTO dto){
+        LeaveTypeProjectionDTO leaveType = leaveTypeService.updateStatus(leaveTypeId, dto);
+        return  ResponseHandler.success(
+                leaveType,
+                "Leave status updated",
+                HttpStatus.OK
+        );
+    }
+    @PatchMapping("/{id}/rename")
+    public ResponseEntity<ApiResponseDTO<?>> updateName(@PathVariable Long id, @RequestBody RenameLeaveTypeDTO dto) {
+        LeaveTypeProjectionDTO leaveType = leaveTypeService.updateName(id, dto);
+        return ResponseHandler.success(leaveType, "Leave type renamed", HttpStatus.OK);
+    }
 }

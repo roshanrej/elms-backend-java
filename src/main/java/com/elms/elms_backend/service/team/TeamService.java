@@ -3,28 +3,30 @@ package com.elms.elms_backend.service.team;
 
 import com.elms.elms_backend.dto.team.CreateTeamDTO;
 import com.elms.elms_backend.dto.team.CreateTeamResponseDTO;
-import com.elms.elms_backend.entity.LeaveTypeEntity;
+import com.elms.elms_backend.dto.team.TeamManagerOptionDTO;
 import com.elms.elms_backend.entity.TeamEntity;
-import com.elms.elms_backend.entity.UserEntity;
-import com.elms.elms_backend.entity.enums.LeaveTypeStatusEnum;
-import com.elms.elms_backend.repository.team.TeamRepository;
+import com.elms.elms_backend.entity.enums.RoleEnum;
+import com.elms.elms_backend.entity.enums.UserStatusEnum;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
 public interface TeamService {
 
+    TeamEntity resolveTeam(String teamName);
 
-    TeamEntity resolveTeam(
-            String teamName
-    );
-
-    @PreAuthorize("hasRole('ADMIN)")
+    @PreAuthorize("hasRole('ADMIN')")
     CreateTeamResponseDTO createTeam(CreateTeamDTO createTeamDTO);
 
-    @PreAuthorize("hasRole('ADMIN)")
+    @PreAuthorize("hasRole('ADMIN')")
     CreateTeamResponseDTO assignTeamManager(Long teamId, Long managerId);
 
     @PreAuthorize("hasRole('ADMIN')")
-CreateTeamResponseDTO editTeam(Long teamId, CreateTeamDTO createTeamDTO);
+    List<CreateTeamResponseDTO> getAllTeams();
+
+    @PreAuthorize("hasRole('ADMIN')")
+    CreateTeamResponseDTO editTeam(Long teamId, CreateTeamDTO createTeamDTO);
+
+    @PreAuthorize("hasRole('ADMIN')")
+    List<TeamManagerOptionDTO> getAvailableManagers(RoleEnum role, UserStatusEnum status);
 }

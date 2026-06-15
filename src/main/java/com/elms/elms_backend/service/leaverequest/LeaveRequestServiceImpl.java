@@ -229,6 +229,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         LocalDate endDate = createLeaveRequestDTO.getEndDate();
         leaveRequest.setStartDate(startDate);
         leaveRequest.setEndDate(endDate);
+        leaveRequest.setYear(extractYear(startDate));
 
         if (startDate != null && endDate != null) {
             leaveRequest.setNoOfDays(
@@ -567,6 +568,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
                 .noOfDays(noOfDays)
                 .reason(dto.getReason())
                 .status(status)
+                .year(extractYear(startDate))
                 .createdAt(LocalDateTime.now())
                 .submittedAt(submittedAt)
                 .build();

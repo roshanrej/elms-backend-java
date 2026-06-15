@@ -40,9 +40,9 @@ public class RefreshTokenServiceImpl
                 RefreshTokenEntity.builder()
                         .token(token)
                         .user(user)
-                        .expiryDate(
-                                LocalDateTime.now().plusDays(7)
-                        )
+                        .expiryDate(LocalDateTime.now().plusDays(7))
+                        .revoked(false)
+                        .createdAt(LocalDateTime.now())
                         .build();
 
         return refreshTokenRepo.save(refreshToken);
@@ -54,19 +54,19 @@ public class RefreshTokenServiceImpl
     ) {
 
         RefreshTokenEntity refreshToken =
-                refreshTokenRepo.findByToken(token)
+                refreshTokenRepo.findByTokenWithUser(token)
                         .orElseThrow(() ->
                                 new RuntimeException(
                                         "Invalid refresh token"
                                 )
                         );
 
-        if (refreshToken.getExpiryDate()
-                .isBefore(LocalDateTime.now())) {
+        if (refreshToken.isRevoked()) {
+            throw new RuntimeException("Refresh token revoked");
+        }
 
-            throw new RuntimeException(
-                    "Refresh token expired"
-            );
+        if (refreshToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Refresh token expired");
         }
 
         return refreshToken;

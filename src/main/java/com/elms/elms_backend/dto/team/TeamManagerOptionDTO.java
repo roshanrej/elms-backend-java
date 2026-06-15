@@ -1,4 +1,4 @@
-package com.elms.elms_backend.dto.user;
+package com.elms.elms_backend.dto.team;
 
 import com.elms.elms_backend.entity.enums.RoleEnum;
 import com.elms.elms_backend.entity.enums.UserStatusEnum;
@@ -7,12 +7,10 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class UserProjectionDTO {
+public class TeamManagerOptionDTO {
     private Long id;
-    private String teamName;
-    private String email;
     private String name;
+    private String email;
     private RoleEnum role;
-    private String department;
     private UserStatusEnum status;
 }

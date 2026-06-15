@@ -66,6 +66,7 @@ public class AuthServiceImpl
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserContextDTO validateSession() {
         UserEntity user = userService.getAuthenticatedUser();
         String department = user.getDepartment().getName();

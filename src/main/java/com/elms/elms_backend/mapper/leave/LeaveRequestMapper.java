@@ -72,6 +72,7 @@ public class LeaveRequestMapper {
                 leaveTypeName,
                 leaveRequest.getStartDate(),
                 leaveRequest.getEndDate(),
+                leaveRequest.getYear(),
                 leaveRequest.getNoOfDays(),
 
                 leaveRequest.getReason(),

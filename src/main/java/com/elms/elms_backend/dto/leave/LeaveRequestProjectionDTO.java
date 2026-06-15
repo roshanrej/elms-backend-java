@@ -18,6 +18,7 @@ public class LeaveRequestProjectionDTO {
     private String leaveType;
     private LocalDate startDate;
     private LocalDate endDate;
+    private Integer year;
     private Integer noOfDays;
     private String reason;
     private LeaveRequestStatusEnum status;

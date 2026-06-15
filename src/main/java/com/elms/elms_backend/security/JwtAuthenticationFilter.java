@@ -89,78 +89,46 @@ public class JwtAuthenticationFilter
             return;
         }
 
-        /**
-         * Extract JWT token from:
-         * "Bearer <token>"
-         */
-        jwtToken = authHeader.substring(7);
+        try {
+            jwtToken = authHeader.substring(7);
+            email = jwtService.extractUsername(jwtToken);
 
-        /**
-         * Extract authenticated user identity
-         * from JWT payload.
-         */
-        email =
-                jwtService.extractUsername(jwtToken);
+            if (email != null
+                    && SecurityContextHolder
+                    .getContext()
+                    .getAuthentication() == null) {
 
-        /**
-         * Prevent duplicate authentication
-         * reconstruction if context already exists.
-         */
-        if (email != null
-                && SecurityContextHolder
-                .getContext()
-                .getAuthentication() == null) {
+                UserDetails userDetails =
+                        customUserDetailsService
+                                .loadUserByUsername(email);
 
-            /**
-             * Reconstruct authenticated user details
-             * from persistence layer.
-             */
-            UserDetails userDetails =
-                    customUserDetailsService
-                            .loadUserByUsername(email);
+                if (jwtService.isTokenValid(
+                        jwtToken,
+                        userDetails
+                )) {
 
-            /**
-             * Validate token ownership and expiry.
-             */
-            if (jwtService.isTokenValid(
-                    jwtToken,
-                    userDetails
-            )) {
+                    UsernamePasswordAuthenticationToken
+                            authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
 
-                /**
-                 * Construct authenticated identity object
-                 * recognized by Spring Security.
-                 */
-                UsernamePasswordAuthenticationToken
-                        authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource()
+                                    .buildDetails(request)
+                    );
 
-                /**
-                 * Attach request-specific metadata
-                 * to authentication context.
-                 */
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource()
-                                .buildDetails(request)
-                );
-
-                /**
-                 * Populate SecurityContext with
-                 * reconstructed authenticated identity.
-                 */
-                SecurityContextHolder
-                        .getContext()
-                        .setAuthentication(authToken);
+                    SecurityContextHolder
+                            .getContext()
+                            .setAuthentication(authToken);
+                }
             }
+        } catch (RuntimeException ignored) {
+            SecurityContextHolder.clearContext();
         }
 
-        /**
-         * Continue remaining request lifecycle.
-         */
         filterChain.doFilter(
                 request,
                 response

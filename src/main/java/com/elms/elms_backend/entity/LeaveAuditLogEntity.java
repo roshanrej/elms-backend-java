@@ -5,11 +5,12 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+
 import java.time.LocalDateTime;
 import java.util.Map;
 
 @Entity
-@Table(name="leave_audit_logs")
+@Table(name = "leave_audit_logs")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,28 +22,26 @@ public class LeaveAuditLogEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "leave_id", nullable = false)
     private LeaveRequestEntity leaveRequest;
 
-    @Column(name = "action", nullable = false)
     @Enumerated(EnumType.STRING)
+    @Column(name = "action", nullable = false, length = 50)
     private LeaveRequestActionEnum action;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name="actor_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "actor_id", nullable = false)
     private UserEntity actor;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name="actor_role_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "actor_role_id", nullable = false)
     private RoleEntity actorRole;
 
-    @Column(name="created_at", nullable = false)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "json", name="metadata")
+    @Column(name = "metadata", columnDefinition = "json")
     private Map<String, Object> metadata;
-
-
 }

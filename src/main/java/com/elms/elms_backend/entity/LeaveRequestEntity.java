@@ -8,7 +8,15 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "leave_requests")
+@Table(
+        name = "leave_requests",
+        indexes = {
+                @Index(name = "idx_leave_request_employee", columnList = "employee_id"),
+                @Index(name = "idx_leave_request_status", columnList = "status"),
+                @Index(name = "idx_leave_request_employee_status", columnList = "employee_id,status"),
+                @Index(name = "idx_leave_request_year", columnList = "year")
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,34 +28,34 @@ public class LeaveRequestEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 🔹 MUST exist
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "employee_id", nullable = false)
     private UserEntity employee;
 
-
-    @ManyToOne(optional = true)
-    @JoinColumn(name = "leave_type_id", nullable = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "leave_type_id")
     private LeaveTypeEntity leaveType;
 
-    // OPTIONAL
-
-    @Column(name = "start_date", nullable = true)
+    @Column(name = "start_date")
     private LocalDate startDate;
 
-    @Column(name="end_date", nullable = true)
+    @Column(name = "end_date")
     private LocalDate endDate;
 
-    @Column(name = "no_of_days", nullable = true)
+    @Column(name = "no_of_days")
     private Integer noOfDays;
 
-    @Column(name="reason",nullable = true)
+    @Column(name = "reason", columnDefinition = "TEXT")
     private String reason;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 30)
     private LeaveRequestStatusEnum status;
 
-    @Column(name = "created_at",nullable = false)
+    @Column(name = "year")
+    private Integer year;
+
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "submitted_at")

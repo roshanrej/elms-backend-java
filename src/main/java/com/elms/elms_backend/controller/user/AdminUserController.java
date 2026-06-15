@@ -1,65 +1,73 @@
 package com.elms.elms_backend.controller.user;
 
-import com.elms.elms_backend.dto.user.UserProjectionDTO;
+import com.elms.elms_backend.dto.api.ApiResponseDTO;
+import com.elms.elms_backend.service.user.UserService;
+import com.elms.elms_backend.util.ResponseHandler;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/admin/api/users")
 public class AdminUserController {
 
+    private final UserService userService;
 
-     /**
-     * Fetch all users
-     */
-    @GetMapping
-    public ResponseEntity<List<UserProjectionDTO>> getUsers() {
-
-        return ResponseEntity.ok(List.of());
+    public AdminUserController(UserService userService) {
+        this.userService = userService;
     }
 
-
-    /**
-     * Fetch all users
-     */
-    @GetMapping
-    public ResponseEntity<List<UserProjectionDTO>> getActiveUsers() {
-
-        return ResponseEntity.ok(List.of());
+    @GetMapping()
+    public ResponseEntity<ApiResponseDTO<?>> getUsers() {
+        return ResponseHandler.success(
+                userService.getAllUsers(),
+                "Users retrieved.",
+                HttpStatus.OK
+        );
     }
 
-    /**
-     * Assign role
-     */
+    @GetMapping("/active")
+    public ResponseEntity<ApiResponseDTO<?>> getActiveUsers() {
+        return ResponseHandler.success(
+                userService.getActiveUsers(),
+                "Active users retrieved.",
+                HttpStatus.OK
+        );
+    }
+
     @PatchMapping("/{userId}/role/{roleId}")
-    public ResponseEntity<Void> assignRole(
+    public ResponseEntity<ApiResponseDTO<?>> assignRole(
             @PathVariable Long userId,
             @PathVariable Long roleId
     ) {
-        return ResponseEntity.ok().build();
+        return ResponseHandler.success(
+                null,
+                "Role assignment is not implemented yet.",
+                HttpStatus.OK
+        );
     }
 
-    /**
-     * Assign team
-     */
     @PatchMapping("/{userId}/team/{teamId}")
-    public ResponseEntity<Void> assignTeam(
+    public ResponseEntity<ApiResponseDTO<?>> assignTeam(
             @PathVariable Long userId,
             @PathVariable Long teamId
     ) {
-        return ResponseEntity.ok().build();
+        return ResponseHandler.success(
+                null,
+                "Team assignment is not implemented yet.",
+                HttpStatus.OK
+        );
     }
 
-    /**
-     * Assign department
-     */
     @PatchMapping("/{userId}/department/{departmentId}")
-    public ResponseEntity<Void> assignDepartment(
+    public ResponseEntity<ApiResponseDTO<?>> assignDepartment(
             @PathVariable Long userId,
             @PathVariable Long departmentId
     ) {
-        return ResponseEntity.ok().build();
+        return ResponseHandler.success(
+                null,
+                "Department assignment is not implemented yet.",
+                HttpStatus.OK
+        );
     }
 }
