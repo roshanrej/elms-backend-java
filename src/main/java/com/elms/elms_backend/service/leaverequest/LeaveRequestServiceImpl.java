@@ -80,7 +80,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
          * Checks if authenticated employee has an assigned manager
          */
         UserEntity employee = userService.getAuthenticatedUser();
-        userService.requireAssignedManager(employee);
+        leaveRequestWorkflowService.assertEmployeeCanSubmitLeave(employee);
 
         //Resolve optional leave type for draft
         LeaveTypeEntity leaveType = leaveTypeService.resolveOptionalLeaveType(createLeaveRequestDto.getLeaveType());
@@ -112,8 +112,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
         // Checks if authenticated employee has an assigned manager
         UserEntity employee = userService.getAuthenticatedUser();
-        userService.requireAssignedManager(employee);
-
+        leaveRequestWorkflowService.assertEmployeeCanSubmitLeave(employee);
         //Validates submission payload for valid leave request submission
         validateSubmissionPayload(createLeaveRequestDto);
 
@@ -154,7 +153,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     @PreAuthorize("hasRole('EMPLOYEE')")
     public LeaveRequestProjectionDTO submitLeaveRequest(Long id) {
         UserEntity employee = userService.getAuthenticatedUser();
-        userService.requireAssignedManager(employee);
+        leaveRequestWorkflowService.assertEmployeeCanSubmitLeave(employee);
         /**
          *  Pre-Requisites existing leave request resource,
          *  complete data and
@@ -251,9 +250,6 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     @Transactional
     @PreAuthorize("hasRole('EMPLOYEE')")
     public LeaveRequestProjectionDTO cancelLeaveRequest(Long leaveRequestId) {
-        UserEntity employee = userService.getAuthenticatedUser();
-        userService.requireAssignedManager(employee);
-
         LeaveRequestEntity leaveRequest = findLeaveOrThrow(leaveRequestId);
         leaveRequestWorkflowService.validateTransition(leaveRequest, LeaveRequestActionEnum.CANCEL_REQUEST);
 
@@ -272,7 +268,6 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     public LeaveRequestProjectionDTO requestLeaveCancel(Long id) {
         LeaveRequestEntity leaveRequest = findLeaveOrThrow(id);
         leaveRequestWorkflowService.validateTransition(leaveRequest, LeaveRequestActionEnum.REQUEST_CANCEL);
-
         return transitionAndAudit(leaveRequest, LeaveRequestActionEnum.REQUEST_CANCEL, LeaveRequestStatusEnum.CANCEL_PENDING);
     }
 
@@ -286,7 +281,6 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     public void deleteLeaveDraft(Long id) {
         LeaveRequestEntity leaveRequest = findLeaveOrThrow(id);
         leaveRequestWorkflowService.validateTransition(leaveRequest, LeaveRequestActionEnum.DELETE_DRAFT);
-
         transitionAndAudit(leaveRequest, LeaveRequestActionEnum.DELETE_DRAFT, LeaveRequestStatusEnum.DELETED);
     }
 
@@ -302,8 +296,6 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     public LeaveRequestProjectionDTO approveLeaveRequest(Long id) {
         LeaveRequestEntity leaveRequest = findLeaveOrThrow(id);
         UserEntity manager = userService.getAuthenticatedUser();
-
-        userService.validateManager(leaveRequest, manager);
         leaveRequestWorkflowService.validateTransition(leaveRequest, LeaveRequestActionEnum.APPROVE_REQUEST);
 
         resolveLeaveBalanceAndSave(leaveRequest, LeaveRequestActionEnum.APPROVE_REQUEST);
@@ -323,10 +315,9 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     public LeaveRequestProjectionDTO rejectLeaveRequest(Long id) {
         LeaveRequestEntity leaveRequest = findLeaveOrThrow(id);
         UserEntity manager = userService.getAuthenticatedUser();
-
-        userService.validateManager(leaveRequest, manager);
         leaveRequestWorkflowService.validateTransition(leaveRequest, LeaveRequestActionEnum.REJECT_REQUEST);
 
+        leaveRequestWorkflowService.assertManagerCanPerformAction(leaveRequest);
         return transitionAndAudit(leaveRequest, LeaveRequestActionEnum.REJECT_REQUEST, LeaveRequestStatusEnum.REJECTED);
     }
 
@@ -341,10 +332,9 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     @PreAuthorize("hasRole('MANAGER')")
     public LeaveRequestProjectionDTO approveCancelRequest(Long id) {
         LeaveRequestEntity leaveRequest = findLeaveOrThrow(id);
-        UserEntity manager = userService.getAuthenticatedUser();
 
-        userService.validateManager(leaveRequest, manager);
         leaveRequestWorkflowService.validateTransition(leaveRequest, LeaveRequestActionEnum.APPROVE_CANCEL);
+        leaveRequestWorkflowService.assertManagerCanPerformAction(leaveRequest);
 
         resolveLeaveBalanceAndSave(leaveRequest, LeaveRequestActionEnum.APPROVE_CANCEL);
 
@@ -363,9 +353,8 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     public LeaveRequestProjectionDTO rejectCancelRequest(Long id) {
         LeaveRequestEntity leaveRequest = findLeaveOrThrow(id);
         UserEntity manager = userService.getAuthenticatedUser();
-
-        userService.validateManager(leaveRequest, manager);
         leaveRequestWorkflowService.validateTransition(leaveRequest, LeaveRequestActionEnum.REJECT_CANCEL);
+        leaveRequestWorkflowService.assertManagerCanPerformAction(leaveRequest);
 
         return transitionAndAudit(leaveRequest, LeaveRequestActionEnum.REJECT_CANCEL, LeaveRequestStatusEnum.APPROVED);
     }

@@ -16,7 +16,6 @@ import java.util.List;
 
 public class ManagerLeaveAnalyticsProjectionDTO {
     private Integer teamApprovalRate; // utilize leave action audit
-    private Integer avgTeamRemainingDays;
     private Month teamPeakLeaveMonth;
     private List<EmployeeLeaveBalanceSummaryDTO> teamLeaveBalances;
 }

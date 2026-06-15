@@ -14,11 +14,8 @@ import java.util.List;
 public interface LeaveBalanceService {
     public List<LeaveBalanceProjectionDTO> getEmployeeLeaveBalanceProjections();
 
-    @PreAuthorize("hasRole('EMPLOYEE')")
-    List<LeaveBalanceProjectionDTO> getTeamLeaveBalanceProjections();
-
-    @PreAuthorize("hasRole('MANAGER')")
-    ManagerLeaveAnalyticsProjectionDTO getManagerLeaveAnalyticsProjection();
+//    @PreAuthorize("hasRole('MANAGER')")
+//    ManagerLeaveAnalyticsProjectionDTO getManagerLeaveAnalyticsProjection();
 
     LeaveBalanceEntity findLeaveBalanceOrThrow(
             UserEntity employee,

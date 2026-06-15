@@ -4,6 +4,7 @@ import com.elms.elms_backend.dto.api.ApiResponseDTO;
 import com.elms.elms_backend.dto.dashboard.ManagerDashboardProjectionDTO;
 import com.elms.elms_backend.dto.leave.LeaveRequestProjectionDTO;
 import com.elms.elms_backend.dto.leave.ManagerEmployeeLeaveDTO;
+import com.elms.elms_backend.dto.leave_analytics.ManagerLeaveAnalyticsProjectionDTO;
 import com.elms.elms_backend.service.leaverequest.LeaveRequestService;
 import com.elms.elms_backend.util.ResponseHandler;
 import org.springframework.http.HttpStatus;

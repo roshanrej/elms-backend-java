@@ -8,9 +8,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+
 public class EmployeeLeaveBalanceSummaryDTO {
 private Long id;
 private String name;
-private Integer totalAllocated;
-private Integer totalRemaining;
+private Long totalAllocated;
+private Long totalRemaining;
 }

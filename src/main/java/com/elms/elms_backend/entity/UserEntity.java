@@ -30,12 +30,8 @@ public class UserEntity {
     private String passwordHash;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "manager_id", nullable = true)
-    private UserEntity manager;
-
-    @OneToMany(mappedBy = "manager")
-    private List<UserEntity> subordinates;
-    // 🔹 RELATIONSHIPS
+    @JoinColumn(name = "team_id", nullable = true)
+    private TeamEntity team;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "role_id", nullable = false)

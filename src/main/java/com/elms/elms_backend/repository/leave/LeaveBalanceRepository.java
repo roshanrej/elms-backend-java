@@ -74,7 +74,7 @@ public interface LeaveBalanceRepository extends JpaRepository<LeaveBalanceEntity
     
             join lb.leavePolicy lp
     
-            where lb.employee.manager.id = :managerId
+            where lb.employee.team.manager.id = :managerId
             and lp.year = :year
             """
     )
@@ -97,7 +97,7 @@ SELECT
     SUM(lb.remainingLeave) AS totalRemaining)
 FROM LeaveBalanceEntity lb
 JOIN UserEntity u ON lb.employee.id = u.id
-WHERE lb.employee.manager.id = :managerId
+WHERE lb.employee.team.manager.id = :managerId
   AND lb.leavePolicy.year = :year
   AND u.status = com.elms.elms_backend.entity.enums.UserStatusEnum.ACTIVE
 GROUP BY u.id, u.name

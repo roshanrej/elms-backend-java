@@ -1,12 +1,16 @@
 package com.elms.elms_backend.service.leaverequestworkflow;
 
 import com.elms.elms_backend.entity.LeaveRequestEntity;
+import com.elms.elms_backend.entity.TeamEntity;
 import com.elms.elms_backend.entity.UserEntity;
 import com.elms.elms_backend.entity.enums.LeaveRequestActionEnum;
 import com.elms.elms_backend.entity.enums.LeaveRequestStatusEnum;
 import com.elms.elms_backend.entity.enums.RoleEnum;
+import com.elms.elms_backend.entity.enums.UserStatusEnum;
 import com.elms.elms_backend.service.user.UserService;
 import org.springframework.stereotype.Service;
+
+import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,9 +44,12 @@ public class LeaveRequestWorkflowServiceImpl implements LeaveRequestWorkflowServ
                         leaveRequest.getEmployee().getId()
                 );
 
+
+
         List<LeaveRequestActionEnum> actions =
                 new ArrayList<>();
         if (userRole == RoleEnum.EMPLOYEE) {
+
 
             if (isOwner && status == LeaveRequestStatusEnum.DRAFT) {
 
@@ -63,6 +70,7 @@ public class LeaveRequestWorkflowServiceImpl implements LeaveRequestWorkflowServ
         }
 
         if (userRole == RoleEnum.MANAGER) {
+
 
             if (status == LeaveRequestStatusEnum.PENDING) {
 
@@ -98,5 +106,69 @@ public class LeaveRequestWorkflowServiceImpl implements LeaveRequestWorkflowServ
             );
         }
     }
+
+    /**
+     * Asserts that the employee is in a position to have a leave request created.
+     *
+     * A leave request requires an active manager in the chain of approval.
+     * Without one, the request would be permanently stuck in PENDING with no
+     * one able to act on it — which is a worse outcome than blocking creation.
+     *
+     * @throws IllegalStateException if no active manager can be resolved
+     */
+    @Override
+    public void assertEmployeeCanSubmitLeave(UserEntity employee) {
+        if (employee.getTeam() == null) {
+            throw new IllegalStateException(
+                    "Leave request cannot be created: employee is not assigned to a team."
+            );
+        }
+        UserEntity manager = employee.getTeam().getManager();
+        if (manager == null) {
+            throw new IllegalStateException(
+                    "Leave request cannot be created: employee's team has no assigned manager."
+            );
+        }
+        if (manager.getStatus() == UserStatusEnum.INACTIVE) {
+            throw new IllegalStateException(
+                    "Leave request cannot be created: employee's assigned manager is currently inactive."
+            );
+        }
+    }
+
+    /**
+     * Asserts that the authenticated manager is authorized to act on the given
+     * leave request, and that the employee is still active.
+     * @throws IllegalStateException if the authenticated manager does not own this employee's team
+     * or if the employee is inactive
+     */
+    @Override
+    public void assertManagerCanPerformAction(LeaveRequestEntity leaveRequest) {
+        UserEntity employee = leaveRequest.getEmployee();
+
+        if (employee.getStatus() == UserStatusEnum.INACTIVE) {
+            throw new IllegalStateException(
+                    "Leave request cannot be acted on: employee is currently inactive."
+            );
+        }
+
+        TeamEntity team = employee.getTeam();
+
+        if (team == null || team.getManager() == null) {
+            throw new IllegalStateException(
+                    "Leave request cannot be acted on: employee has no assigned team or manager."
+            );
+        }
+
+        UserEntity authenticatedManager = userService.getAuthenticatedUser();
+
+        if (!authenticatedManager.getId().equals(team.getManager().getId())) {
+            throw new IllegalStateException(
+                    "Manager is not authorized to act on this leave request."
+            );
+        }
+    }
+
+
 
 }

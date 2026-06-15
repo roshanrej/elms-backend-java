@@ -36,7 +36,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequestEntity
 
     JOIN FETCH lr.leaveType lt
 
-    WHERE e.manager.id = :managerId and lr.status in (:statuses)
+    WHERE e.team.manager.id = :managerId and lr.status in (:statuses)
 
     AND e.status =
         com.elms.elms_backend.entity.enums
@@ -63,7 +63,7 @@ where lr.employee = :employee and lr.leaveType = :leaveType and lr.status In (:s
     @Query("""
     select count(lr)
     from LeaveRequestEntity lr
-    where lr.employee.manager.id = :managerId
+    where lr.employee.team.manager.id = :managerId
       and lr.status = :status
       and lr.employee.status = com.elms.elms_backend.entity.enums.UserStatusEnum.ACTIVE
 """)
@@ -76,7 +76,7 @@ where lr.employee = :employee and lr.leaveType = :leaveType and lr.status In (:s
     select lr
     from LeaveRequestEntity lr
     join fetch lr.employee e
-    where e.manager.id = :managerId
+    where e.team.manager.id = :managerId
       and e.status = com.elms.elms_backend.entity.enums.UserStatusEnum.ACTIVE
       and lr.status = com.elms.elms_backend.entity.enums.LeaveRequestStatusEnum.APPROVED
       and lr.startDate >= :today

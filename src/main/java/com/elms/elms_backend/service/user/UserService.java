@@ -9,6 +9,4 @@ import java.util.List;
 public interface UserService {
     UserEntity getAuthenticatedUser();
     List<UserEntity> findByRole(RoleEnum roleName);
-    void requireAssignedManager(UserEntity employee);
-    void validateManager(LeaveRequestEntity leaveRequest, UserEntity manager);
 }
