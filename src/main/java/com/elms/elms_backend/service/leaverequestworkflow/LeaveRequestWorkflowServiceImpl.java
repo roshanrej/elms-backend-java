@@ -10,7 +10,6 @@ import com.elms.elms_backend.entity.enums.UserStatusEnum;
 import com.elms.elms_backend.service.user.UserService;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,17 +68,13 @@ public class LeaveRequestWorkflowServiceImpl implements LeaveRequestWorkflowServ
             }
         }
 
-        if (userRole == RoleEnum.MANAGER) {
-
-
+        if (userRole == RoleEnum.MANAGER && isManagerForLeaveRequest(user, leaveRequest)) {
             if (status == LeaveRequestStatusEnum.PENDING) {
-
                 actions.add(LeaveRequestActionEnum.APPROVE_REQUEST);
                 actions.add(LeaveRequestActionEnum.REJECT_REQUEST);
             }
 
             if (status == LeaveRequestStatusEnum.CANCEL_PENDING) {
-
                 actions.add(LeaveRequestActionEnum.APPROVE_CANCEL);
                 actions.add(LeaveRequestActionEnum.REJECT_CANCEL);
             }
@@ -88,6 +83,12 @@ public class LeaveRequestWorkflowServiceImpl implements LeaveRequestWorkflowServ
         return actions;
     }
 
+    private boolean isManagerForLeaveRequest(UserEntity manager, LeaveRequestEntity leaveRequest) {
+        TeamEntity team = leaveRequest.getEmployee().getTeam();
+        return team != null
+                && team.getManager() != null
+                && manager.getId().equals(team.getManager().getId());
+    }
 
     // =========================================================================
     // WORKFLOW VALIDATION

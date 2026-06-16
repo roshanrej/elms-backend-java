@@ -74,9 +74,7 @@ public class RefreshTokenServiceImpl
     @Transactional
     @Override
     public void deleteRefreshToken(String refreshToken) {
-
         RefreshTokenEntity refreshTokenEntity = refreshTokenRepo.findByToken(refreshToken).orElseThrow(()->new IllegalArgumentException("Invalid token"));
         refreshTokenRepo.delete(refreshTokenEntity);
-
     }
 }

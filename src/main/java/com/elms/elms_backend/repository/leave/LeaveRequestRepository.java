@@ -9,43 +9,67 @@ import com.elms.elms_backend.entity.enums.LeaveRequestStatusEnum;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 
 public interface LeaveRequestRepository extends JpaRepository<LeaveRequestEntity, Long> {
 
-    List<LeaveRequestEntity> findByEmployeeAndStatusNotIn(
-            UserEntity employee,
-            Collection<LeaveRequestStatusEnum> statuses
+    @Query("""
+        SELECT DISTINCT lr
+        FROM LeaveRequestEntity lr
+        JOIN FETCH lr.leaveType
+        WHERE lr.employee = :employee
+          AND lr.status NOT IN :statuses
+        """)
+    List<LeaveRequestEntity> findEmployeeRequestsExcludingStatuses(
+            @Param("employee") UserEntity employee,
+            @Param("statuses") Collection<LeaveRequestStatusEnum> statuses
     );
 
-    List<LeaveRequestEntity> findByEmployeeAndStatusIn(
-            UserEntity employee,
-            Collection<LeaveRequestStatusEnum> statuses
+    @Query("""
+        SELECT DISTINCT lr
+        FROM LeaveRequestEntity lr
+        JOIN FETCH lr.leaveType
+        WHERE lr.employee = :employee
+          AND lr.status IN :statuses
+        """)
+    List<LeaveRequestEntity> findEmployeeRequestsWithStatuses(
+            @Param("employee") UserEntity employee,
+            @Param("statuses") Collection<LeaveRequestStatusEnum> statuses
     );
+
     List<LeaveRequestEntity> findByEmployee(UserEntity employee);
 
     @Query("""
-    SELECT lr
-    FROM LeaveRequestEntity lr
+        SELECT lr
+        FROM LeaveRequestEntity lr
+        JOIN FETCH lr.leaveType
+        JOIN FETCH lr.employee e
+        LEFT JOIN FETCH e.team t
+        LEFT JOIN FETCH t.manager
+        WHERE lr.id = :id
+        """)
+    Optional<LeaveRequestEntity> findByIdWithDetails(@Param("id") Long id);
 
-    JOIN FETCH lr.employee e
-
-    JOIN FETCH lr.leaveType lt
-
-    WHERE e.team.manager.id = :managerId and lr.status in (:statuses)
-
-    AND e.status =
-        com.elms.elms_backend.entity.enums
-        .UserStatusEnum.ACTIVE
-""")
-    List<LeaveRequestEntity>
-    findLeaveRequestsByManagerAndStatusIn (
-            Long managerId,
-            Collection<LeaveRequestStatusEnum> statuses
+    @Query("""
+        SELECT DISTINCT lr
+        FROM LeaveRequestEntity lr
+        JOIN FETCH lr.employee e
+        LEFT JOIN FETCH e.team t
+        LEFT JOIN FETCH t.manager
+        JOIN FETCH lr.leaveType
+        WHERE e.team.manager.id = :managerId
+          AND lr.status IN :statuses
+          AND e.status = com.elms.elms_backend.entity.enums.UserStatusEnum.ACTIVE
+        """)
+    List<LeaveRequestEntity> findLeaveRequestsByManagerAndStatusIn(
+            @Param("managerId") Long managerId,
+            @Param("statuses") Collection<LeaveRequestStatusEnum> statuses
     );
 
     @Query(
@@ -73,15 +97,16 @@ where lr.employee = :employee and lr.leaveType = :leaveType and lr.status In (:s
     );
 
     @Query("""
-    select lr
-    from LeaveRequestEntity lr
-    join fetch lr.employee e
-    where e.team.manager.id = :managerId
-      and e.status = com.elms.elms_backend.entity.enums.UserStatusEnum.ACTIVE
-      and lr.status = com.elms.elms_backend.entity.enums.LeaveRequestStatusEnum.APPROVED
-      and lr.startDate >= :today
-    order by lr.startDate asc
-""")
+        SELECT lr
+        FROM LeaveRequestEntity lr
+        JOIN FETCH lr.leaveType
+        JOIN FETCH lr.employee e
+        WHERE e.team.manager.id = :managerId
+          AND e.status = com.elms.elms_backend.entity.enums.UserStatusEnum.ACTIVE
+          AND lr.status = com.elms.elms_backend.entity.enums.LeaveRequestStatusEnum.APPROVED
+          AND lr.startDate >= :today
+        ORDER BY lr.startDate ASC
+        """)
     List<LeaveRequestEntity> findUpcomingApprovedLeaves(
             Long managerId,
             LocalDate today,

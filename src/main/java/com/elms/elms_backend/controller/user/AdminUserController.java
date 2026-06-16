@@ -53,8 +53,8 @@ public class AdminUserController {
             @PathVariable Long teamId
     ) {
         return ResponseHandler.success(
-                null,
-                "Team assignment is not implemented yet.",
+                userService.assignUserToTeam(userId, teamId),
+                "Team assigned successfully.",
                 HttpStatus.OK
         );
     }

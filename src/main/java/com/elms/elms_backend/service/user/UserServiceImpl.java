@@ -1,13 +1,13 @@
 package com.elms.elms_backend.service.user;
 
 import com.elms.elms_backend.dto.user.UserProjectionDTO;
-import com.elms.elms_backend.entity.LeaveRequestEntity;
 import com.elms.elms_backend.entity.RoleEntity;
 import com.elms.elms_backend.entity.TeamEntity;
 import com.elms.elms_backend.entity.UserEntity;
 import com.elms.elms_backend.entity.enums.RoleEnum;
 import com.elms.elms_backend.entity.enums.UserStatusEnum;
 import com.elms.elms_backend.mapper.user.UserMapper;
+import com.elms.elms_backend.repository.team.TeamRepository;
 import com.elms.elms_backend.repository.user.RoleRepository;
 import com.elms.elms_backend.repository.user.UserRepository;
 import com.elms.elms_backend.security.UserPrincipal;
@@ -24,11 +24,18 @@ public class UserServiceImpl implements  UserService{
 
     private final UserRepository userRepo;
     private final RoleRepository roleRepo;
+    private final TeamRepository teamRepo;
     private final UserMapper userMapper;
 
-    public UserServiceImpl(UserRepository userRepo, RoleRepository roleRepo, UserMapper userMapper){
+    public UserServiceImpl(
+            UserRepository userRepo,
+            RoleRepository roleRepo,
+            TeamRepository teamRepo,
+            UserMapper userMapper
+    ) {
         this.userRepo = userRepo;
         this.roleRepo = roleRepo;
+        this.teamRepo = teamRepo;
         this.userMapper = userMapper;
     }
 
@@ -110,6 +117,23 @@ public class UserServiceImpl implements  UserService{
        UserEntity savedUser =  userRepo.save(user);
        return userMapper.mapToUserProjectionDTO(savedUser);
 
+    }
+
+    @Override
+    @Transactional
+    public UserProjectionDTO assignUserToTeam(Long userId, Long teamId) {
+        UserEntity user = userRepo.findByIdAndStatusWithAssociations(userId, UserStatusEnum.ACTIVE)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getRole().getName() != RoleEnum.EMPLOYEE) {
+            throw new IllegalArgumentException("Only employees can be assigned to a team");
+        }
+
+        TeamEntity team = teamRepo.findById(teamId)
+                .orElseThrow(() -> new RuntimeException("Team not found"));
+
+        user.setTeam(team);
+        return userMapper.mapToUserProjectionDTO(userRepo.save(user));
     }
 
 }

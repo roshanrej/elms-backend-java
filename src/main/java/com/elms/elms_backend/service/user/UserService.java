@@ -13,4 +13,6 @@ public interface UserService {
     List<UserProjectionDTO> getAllUsers();
     List<UserProjectionDTO> getActiveUsers();
     List<UserProjectionDTO> getUsersByRoleAndStatus(RoleEnum role, UserStatusEnum status);
+
+    UserProjectionDTO assignUserToTeam(Long userId, Long teamId);
 }

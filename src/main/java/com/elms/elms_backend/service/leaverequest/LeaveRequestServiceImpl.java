@@ -202,10 +202,11 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
      * @return list of active employee leave requests
      */
     @Override
+    @Transactional(readOnly = true)
     @PreAuthorize("hasRole('EMPLOYEE')")
     public List<EmployeeLeaveRequestDTO> getEmployeeActiveLeaveRequests() {
         UserEntity employee = userService.getAuthenticatedUser();
-        return leaveRequestRepo.findByEmployeeAndStatusIn(
+        return leaveRequestRepo.findEmployeeRequestsWithStatuses(
                 employee,
                 List.of(LeaveRequestStatusEnum.PENDING, LeaveRequestStatusEnum.APPROVED, LeaveRequestStatusEnum.CANCEL_PENDING)
         ).stream().map(leaveRequestMapper::mapToEmployeeLeaveRequestDTO).toList();
@@ -298,6 +299,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         LeaveRequestEntity leaveRequest = findLeaveOrThrow(id);
         UserEntity manager = userService.getAuthenticatedUser();
         leaveRequestWorkflowService.validateTransition(leaveRequest, LeaveRequestActionEnum.APPROVE_REQUEST);
+        leaveRequestWorkflowService.assertManagerCanPerformAction(leaveRequest);
 
         resolveLeaveBalanceAndSave(leaveRequest, LeaveRequestActionEnum.APPROVE_REQUEST);
 
@@ -365,10 +367,15 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
      * * @return list of persisted leave request projections
      */
     @Override
+    @Transactional(readOnly = true)
     @PreAuthorize("hasRole('EMPLOYEE')")
     public List<LeaveRequestProjectionDTO> getEmployeeLeaveRequests() {
         UserEntity employee = userService.getAuthenticatedUser();
-        return leaveRequestRepo.findByEmployeeAndStatusNotIn(employee, List.of(LeaveRequestStatusEnum.DRAFT, LeaveRequestStatusEnum.DELETED)).stream().map(this::mapWithActions).toList();
+        return leaveRequestRepo
+                .findEmployeeRequestsExcludingStatuses(employee, List.of(LeaveRequestStatusEnum.DRAFT, LeaveRequestStatusEnum.DELETED))
+                .stream()
+                .map(this::mapWithActions)
+                .toList();
     }
 
     /**
@@ -376,11 +383,15 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
      * * @return list of draft leave request projections
      */
     @Override
+    @Transactional(readOnly = true)
     @PreAuthorize("hasRole('EMPLOYEE')")
     public List<LeaveRequestProjectionDTO> getEmployeeLeaveDrafts() {
         UserEntity employee = userService.getAuthenticatedUser();
-        return leaveRequestRepo.findByEmployeeAndStatusIn(employee, List.of(LeaveRequestStatusEnum.DRAFT))
-                .stream().map(this::mapWithActions).toList();
+        return leaveRequestRepo
+                .findEmployeeRequestsWithStatuses(employee, List.of(LeaveRequestStatusEnum.DRAFT))
+                .stream()
+                .map(this::mapWithActions)
+                .toList();
     }
 
     /**
@@ -388,6 +399,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
      *  @return list of leave request projections for manager
      */
     @Override
+    @Transactional(readOnly = true)
     @PreAuthorize("hasRole('MANAGER')")
     public List<ManagerEmployeeLeaveDTO> getManagerOwnedLeaveRequests() {
         Long managerId = userService.getAuthenticatedUser().getId();
@@ -399,8 +411,9 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
                 )).toList();
     }
 
-    @PreAuthorize("hasRole('MANAGER')")
     @Override
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('MANAGER')")
     public ManagerDashboardProjectionDTO getManagerDashboardProjection() {
         Long managerId = userService.getAuthenticatedUser().getId();
         Integer pendingCount = leaveRequestRepo.countByManagerIdAndStatus(managerId,LeaveRequestStatusEnum.PENDING);
@@ -603,7 +616,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
      * @throws IllegalArgumentException if the request is not found or is 'CANCELLED'
      */
     private LeaveRequestEntity findLeaveOrThrow(Long id) {
-        return leaveRequestRepo.findById(id)
+        return leaveRequestRepo.findByIdWithDetails(id)
                 .filter(lr ->
                         lr.getStatus() != LeaveRequestStatusEnum.CANCELLED
                                 && lr.getStatus() != LeaveRequestStatusEnum.DELETED
