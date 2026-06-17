@@ -19,8 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-
 /**
  * Controller responsible for:
  * - authentication endpoints
@@ -134,33 +132,10 @@ public class AuthController {
      * @return standardized registration response
      */
     @PostMapping("/register")
-    public ResponseEntity<ApiResponseDTO<?>>
-    dummyRegister(
-            @RequestBody Map<String, String> body
-    ) {
-
-        try {
-
-            authService.dummyRegister(
-                    body.get("username"),
-                    body.get("email"),
-                    body.get("password"),
-                    body.get("department"),
-                    body.get("role")
-            );
-
-            return ResponseHandler.success(
-                    null,
-                    "User registered successfully",
-                    HttpStatus.CREATED
-            );
-
-        } catch (RuntimeException e) {
-
-            return ResponseHandler.failure(
-                    e.getMessage(),
-                    HttpStatus.BAD_REQUEST
-            );
-        }
+    public ResponseEntity<ApiResponseDTO<?>> registerDisabled() {
+        return ResponseHandler.failure(
+                "Public registration is disabled. Use POST /super-admin/api/users/create.",
+                HttpStatus.FORBIDDEN
+        );
     }
 }

@@ -2,6 +2,7 @@ package com.elms.elms_backend.repository.user;
 
 import com.elms.elms_backend.entity.RoleEntity;
 import com.elms.elms_backend.entity.UserEntity;
+import com.elms.elms_backend.entity.enums.RoleEnum;
 import com.elms.elms_backend.entity.enums.UserStatusEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -70,6 +71,17 @@ public interface UserRepository extends JpaRepository<UserEntity,Long> {
          @Param("id") Long id,
          @Param("status") UserStatusEnum status
  );
+
+ @Query("""
+         SELECT u FROM UserEntity u
+         JOIN FETCH u.role
+         JOIN FETCH u.department
+         LEFT JOIN FETCH u.team
+         WHERE u.id = :id
+         """)
+ Optional<UserEntity> findByIdWithAssociations(@Param("id") Long id);
+
+ long countByRole_NameAndStatus(RoleEnum role, UserStatusEnum status);
 }
 
 

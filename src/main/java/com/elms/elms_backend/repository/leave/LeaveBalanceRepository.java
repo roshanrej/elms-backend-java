@@ -52,4 +52,6 @@ public interface LeaveBalanceRepository extends JpaRepository<LeaveBalanceEntity
             Integer year
     );
 
+    List<LeaveBalanceEntity> findByEmployee(UserEntity employee);
+
 }

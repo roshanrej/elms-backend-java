@@ -15,4 +15,8 @@ public interface UserService {
     List<UserProjectionDTO> getUsersByRoleAndStatus(RoleEnum role, UserStatusEnum status);
 
     UserProjectionDTO assignUserToTeam(Long userId, Long teamId);
+
+    UserProjectionDTO assignRole(Long userId, Long roleId);
+
+    UserProjectionDTO assignDepartment(Long userId, Long departmentId);
 }

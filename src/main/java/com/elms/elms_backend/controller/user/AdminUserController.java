@@ -41,8 +41,8 @@ public class AdminUserController {
             @PathVariable Long roleId
     ) {
         return ResponseHandler.success(
-                null,
-                "Role assignment is not implemented yet.",
+                userService.assignRole(userId, roleId),
+                "Role assigned successfully.",
                 HttpStatus.OK
         );
     }
@@ -65,8 +65,8 @@ public class AdminUserController {
             @PathVariable Long departmentId
     ) {
         return ResponseHandler.success(
-                null,
-                "Department assignment is not implemented yet.",
+                userService.assignDepartment(userId, departmentId),
+                "Department assigned successfully.",
                 HttpStatus.OK
         );
     }
