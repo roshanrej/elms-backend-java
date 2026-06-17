@@ -87,7 +87,7 @@ public class UserServiceImpl implements  UserService{
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional(readOnly = true)
     public List<UserProjectionDTO> getAllUsers() {
-        return userRepo.findAllWithAssociations().stream()
+        return userRepo.findAllWithAssociations().stream().filter(u-> u.getRole().getName() != RoleEnum.SUPER_ADMIN)
                 .map(userMapper::mapToUserProjectionDTO)
                 .toList();
     }

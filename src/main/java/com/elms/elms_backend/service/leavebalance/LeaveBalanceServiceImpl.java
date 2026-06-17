@@ -11,8 +11,10 @@ import com.elms.elms_backend.repository.leave.LeavePolicyRepository;
 import com.elms.elms_backend.entity.RoleEntity;
 import com.elms.elms_backend.repository.user.RoleRepository;
 import com.elms.elms_backend.repository.user.UserRepository;
-import com.elms.elms_backend.service.user.UserService;
+import com.elms.elms_backend.security.UserPrincipal;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,27 +35,23 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
     private final LeavePolicyRepository leavePolicyRepository;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final UserService userService;
-
 
     public LeaveBalanceServiceImpl(
             LeaveBalanceRepository leaveBalanceRepo,
             LeavePolicyRepository leavePolicyRepository,
             UserRepository userRepository,
-            RoleRepository roleRepository,
-            UserService userService
+            RoleRepository roleRepository
     ) {
         this.leaveBalanceRepo = leaveBalanceRepo;
         this.leavePolicyRepository = leavePolicyRepository;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
-        this.userService = userService;
     }
 
     @PreAuthorize("hasRole('EMPLOYEE')")
     @Override
     public List<LeaveBalanceProjectionDTO> getEmployeeLeaveBalanceProjections() {
-        UserEntity employee = userService.getAuthenticatedUser();
+        UserEntity employee = getAuthenticatedUser();
         Integer year = Year.now().getValue();
         return leaveBalanceRepo.getLeaveBalanceProjection(
                 employee,
@@ -148,5 +146,18 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
             balance.setUpdatedAt(LocalDateTime.now());
             leaveBalanceRepo.save(balance);
         });
+    }
+
+    private UserEntity getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null
+                || !authentication.isAuthenticated()
+                || !(authentication.getPrincipal() instanceof UserPrincipal principal)) {
+            throw new RuntimeException("Unauthorized");
+        }
+
+        return userRepository.findByEmail(principal.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 }
