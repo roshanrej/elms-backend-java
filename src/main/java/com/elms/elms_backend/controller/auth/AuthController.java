@@ -125,17 +125,5 @@ public class AuthController {
         );
     }
 
-    /**
-     * Registers a new user into the system.
-     *
-     * @param body registration payload
-     * @return standardized registration response
-     */
-    @PostMapping("/register")
-    public ResponseEntity<ApiResponseDTO<?>> registerDisabled() {
-        return ResponseHandler.failure(
-                "Public registration is disabled. Use POST /super-admin/api/users/create.",
-                HttpStatus.FORBIDDEN
-        );
-    }
+
 }

@@ -68,7 +68,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
     /**
      * Creates a leave request resource in the 'DRAFT' state.
-     * * @param createLeaveRequestDto incoming leave draft payload
+     * @param createLeaveRequestDto incoming leave draft payload
      *
      * @return persisted leave request projection
      */
@@ -101,7 +101,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
     /**
      * Submits a new leave request resource in the 'PENDING' state.
-     * * @param createLeaveRequestDto incoming leave submission payload
+     *  @param createLeaveRequestDto incoming leave submission payload
      *
      * @return persisted leave request resource projection
      */
